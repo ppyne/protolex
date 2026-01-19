@@ -45,6 +45,79 @@ sum_list = fn(lst) {
 }
 ```
 
+### How to replace `while`, `do/while`, `for`, `break`, `continue`
+
+Protolex has no loop syntax, so you model loops with recursion and explicit
+control values. Here are direct equivalents.
+
+**`while (cond) { body }`**
+
+```protolex
+loop = fn(state) {
+    if cond(state) {
+        loop(step(state))
+    } else {
+        state
+    }
+}
+```
+
+**`do { body } while (cond);`**
+
+```protolex
+loop = fn(state) {
+    next = step(state)
+    if cond(next) { loop(next) } else { next }
+}
+```
+
+**`for (i = 0; i < len; i++)`**
+
+```protolex
+loop = fn(i, len, state) {
+    if i < len {
+        loop(i + 1, len, step(i, state))
+    } else {
+        state
+    }
+}
+```
+
+**`continue` (skip to next iteration)**
+
+```protolex
+loop = fn(i, len, state) {
+    if i < len {
+        if shouldSkip(i) {
+            loop(i + 1, len, state)
+        } else {
+            loop(i + 1, len, step(i, state))
+        }
+    } else {
+        state
+    }
+}
+```
+
+**`break` (early exit)**
+
+Use an explicit stop condition or raise an exception that the iterator
+captures.
+
+```protolex
+Stop = "StopIteration"
+
+loop = fn(i, len, state) {
+    if i < len {
+        if shouldStop(i) { throw Stop } else { loop(i + 1, len, step(i, state)) }
+    } else {
+        state
+    }
+}
+
+result = try { loop(0, len, init) } catch e { init }
+```
+
 ### No `return`
 
 The last expression is the function result.
