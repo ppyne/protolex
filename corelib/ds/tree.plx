@@ -2,6 +2,7 @@
 # Version 0.1
 
 import Array from "array.plx"
+import List from "list.plx"
 
 Tree = [
     proto = null
@@ -67,6 +68,31 @@ Tree.remove = fn(t, value, compare) {
         } else {
             i = i + 1
         }
+    }
+}
+
+Tree.of = fn(items, compare) {
+    if items.proto == Tree {
+        items
+    } else if items.proto == Array {
+        t = Tree.empty()
+        i = 0
+        n = Array.length(items)
+        while i < n {
+            Tree.insert(t, Array.get(items, i), compare)
+            i = i + 1
+        }
+        t
+    } else if items.proto == List {
+        t = Tree.empty()
+        cur = items
+        while !List.isNil(cur) {
+            Tree.insert(t, List.head(cur), compare)
+            cur = List.tail(cur)
+        }
+        t
+    } else {
+        throw "Tree.of expects Array or List"
     }
 }
 

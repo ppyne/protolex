@@ -315,26 +315,68 @@ the corelib provides explicit constructor functions.
 ### List.of
 
 ```protolex
-ds.List.of(v1, v2, v3, ...)
+ds.List.of(listOrArray)
 ```
 
-Builds an immutable list containing the values in the given order.
+Builds an immutable list from a list or an array.
+
+### Array.of
+
+```protolex
+ds.Array.of(listOrArray)
+```
+
+Builds a dynamic array from a list or an array.
 
 ### Map.of
 
 ```protolex
-ds.Map.of(
-  k1, v1,
-  k2, v2,
-  ...
-)
+ds.Map.of(tableOrMap)
 ```
 
-Builds a map from a sequence of key/value pairs.
-The number of arguments must be even, otherwise an exception is raised.
+Builds a map from a map or any table-like object by copying its slots.
 
-These functions replace any attempt at list or map literals,
-which are intentionally absent from the language.
+### Set.of
+
+```protolex
+ds.Set.of(listOrArrayOrTableOrSet)
+```
+
+Builds a set from a set, list, array, or table (keys are used).
+
+### Stack.of
+
+```protolex
+ds.Stack.of(listOrArray)
+```
+
+Builds a stack by pushing items in order.
+
+### Queue.of
+
+```protolex
+ds.Queue.of(listOrArray)
+```
+
+Builds a queue by enqueuing items in order.
+
+### Tree.of
+
+```protolex
+ds.Tree.of(listOrArray, compare)
+```
+
+Builds a tree by inserting items in order using `compare`.
+
+### Graph.of
+
+```protolex
+ds.Graph.of(adjacency)
+```
+
+Builds a graph from an adjacency table where each key maps to a list or array of neighbors.
+
+These functions replace any attempt at list or map literals, which are intentionally absent from the language.
 
 ---
 

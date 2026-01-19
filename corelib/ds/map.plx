@@ -48,6 +48,18 @@ Map.size = fn(m) {
     count
 }
 
+Map.of = fn(items) {
+    if items.proto == Map {
+        items
+    } else {
+        m = Map.new()
+        for k in items {
+            Map.put(m, k, items[k])
+        }
+        m
+    }
+}
+
 freeze(Map)
 
 Map

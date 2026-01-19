@@ -3,6 +3,7 @@
 
 import Map from "map.plx"
 import Array from "array.plx"
+import List from "list.plx"
 
 Graph = [
     proto = null
@@ -59,6 +60,33 @@ Graph._addEdgeOne = fn(g, a, b) {
 Graph.addEdge = fn(g, a, b) {
     Graph._addEdgeOne(g, a, b)
     Graph._addEdgeOne(g, b, a)
+}
+
+Graph.of = fn(adj) {
+    if adj.proto == Graph {
+        adj
+    } else {
+        g = Graph.new()
+        for k in adj {
+            Graph.addNode(g, k)
+            neighbors = adj[k]
+            if neighbors.proto == Array {
+                i = 0
+                n = Array.length(neighbors)
+                while i < n {
+                    Graph.addEdge(g, k, Array.get(neighbors, i))
+                    i = i + 1
+                }
+            } else if neighbors.proto == List {
+                cur = neighbors
+                while !List.isNil(cur) {
+                    Graph.addEdge(g, k, List.head(cur))
+                    cur = List.tail(cur)
+                }
+            }
+        }
+        g
+    }
 }
 
 freeze(Graph)

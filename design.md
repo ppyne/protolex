@@ -203,8 +203,8 @@ Protolex defines no literal for:
 Collection construction is performed by the corelib:
 
 ```protolex
-List.of(1, 2, 3)
-Map.of("a", 1, "b", 2)
+List.of(listOrArray)
+Map.of(tableOrMap)
 ```
 
 This allows:
