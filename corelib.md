@@ -22,6 +22,13 @@ The corelib:
 
 All structures are exposed as **ordinary frozen objects**.
 
+## Absence predicate
+
+The language provides a standard predicate `isAbsent(expr)` to test whether
+evaluating `expr` resulted in a missing slot (lookup failed).
+
+Absence is not a value and cannot be stored or compared.
+
 ---
 
 ## 1. General principles

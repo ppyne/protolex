@@ -1,74 +1,14 @@
 #include <ctype.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-typedef struct String {
-    char *data;
-    size_t len;
-    uint32_t hash;
-} String;
-
-typedef enum {
-    VAL_INT,
-    VAL_FLOAT,
-    VAL_BOOL,
-    VAL_NULL,
-    VAL_STRING,
-    VAL_FUNCTION,
-    VAL_TABLE,
-    VAL_UNDEFINED
-} ValueType;
-
-struct Function;
-struct Table;
-
-typedef struct Value {
-    ValueType type;
-    union {
-        int64_t i;
-        double f;
-        bool b;
-        String *str;
-        struct Function *fn;
-        struct Table *table;
-    } as;
-} Value;
-
-typedef struct {
-    Value key;
-    Value value;
-    bool used;
-    bool tombstone;
-} Entry;
-
-typedef struct {
-    Entry *entries;
-    size_t capacity;
-    size_t count;
-} Map;
-
-typedef struct Table {
-    Map map;
-    struct Table *proto;
-    bool frozen;
-    int thaw_count;
-} Table;
-
-typedef struct Env {
-    Map map;
-    struct Env *parent;
-} Env;
-
-typedef struct EvalResult {
-    bool is_exception;
-    Value value;
-} EvalResult;
+#include "protolex_runtime.h"
+#include "runtime.h"
 
 typedef struct Node Node;
+
 
 typedef enum {
     NODE_BLOCK,
@@ -97,12 +37,6 @@ typedef struct {
     size_t count;
     size_t capacity;
 } NodeList;
-
-typedef struct {
-    char **items;
-    size_t count;
-    size_t capacity;
-} StrList;
 
 typedef struct {
     char **keys;
@@ -193,17 +127,6 @@ struct Node {
     } as;
 };
 
-typedef Value (*NativeFn)(int argc, Value *argv, EvalResult *err);
-
-typedef struct Function {
-    bool is_native;
-    int arity;
-    StrList params;
-    Node *body;
-    Env *env;
-    NativeFn native;
-} Function;
-
 typedef enum {
     TOK_EOF,
     TOK_IDENT,
@@ -281,12 +204,12 @@ typedef struct {
     size_t current;
 } Parser;
 
-static void runtime_fatal(const char *msg) {
+void runtime_fatal(const char *msg) {
     fprintf(stderr, "fatal: %s\n", msg);
     exit(1);
 }
 
-static void *xmalloc(size_t size) {
+void *xmalloc(size_t size) {
     void *p = malloc(size);
     if (!p) {
         runtime_fatal("out of memory");
@@ -318,54 +241,54 @@ static String *make_string(const char *s, size_t len) {
     return str;
 }
 
-static Value make_int(int64_t v) {
+Value make_int(int64_t v) {
     Value val;
     val.type = VAL_INT;
     val.as.i = v;
     return val;
 }
 
-static Value make_float(double v) {
+Value make_float(double v) {
     Value val;
     val.type = VAL_FLOAT;
     val.as.f = v;
     return val;
 }
 
-static Value make_bool(bool v) {
+Value make_bool(bool v) {
     Value val;
     val.type = VAL_BOOL;
     val.as.b = v;
     return val;
 }
 
-static Value make_null(void) {
+Value make_null(void) {
     Value val;
     val.type = VAL_NULL;
     return val;
 }
 
-static Value make_undefined(void) {
+Value make_undefined(void) {
     Value val;
     val.type = VAL_UNDEFINED;
     return val;
 }
 
-static Value make_string_value(const char *s, size_t len) {
+Value make_string_value(const char *s, size_t len) {
     Value val;
     val.type = VAL_STRING;
     val.as.str = make_string(s, len);
     return val;
 }
 
-static Value make_table(Table *t) {
+Value make_table(Table *t) {
     Value val;
     val.type = VAL_TABLE;
     val.as.table = t;
     return val;
 }
 
-static Value make_function(Function *fn) {
+Value make_function(Function *fn) {
     Value val;
     val.type = VAL_FUNCTION;
     val.as.fn = fn;
@@ -544,7 +467,7 @@ static bool map_delete(Map *map, Value key) {
     return false;
 }
 
-static Table *table_new(void) {
+Table *table_new(void) {
     Table *t = xmalloc(sizeof(Table));
     map_init(&t->map);
     t->proto = NULL;
@@ -579,6 +502,10 @@ static bool table_set_proto(Table *self, Value v) {
 
 static bool table_can_mutate(Table *t) {
     return !t->frozen || t->thaw_count > 0;
+}
+
+void table_freeze(Table *t) {
+    t->frozen = true;
 }
 
 typedef struct {
@@ -630,7 +557,7 @@ static void table_adjust_thaw(Table *root, int delta) {
     free(stack.items);
 }
 
-static bool table_set(Table *t, Value key, Value value) {
+bool table_set(Table *t, Value key, Value value) {
     if (!table_can_mutate(t)) {
         return false;
     }
@@ -712,33 +639,37 @@ static EvalResult error_msg(const char *msg) {
     return exception(make_string_value(msg, strlen(msg)));
 }
 
-static void print_value(Value v) {
+void print_value_to(FILE *out, Value v) {
     switch (v.type) {
     case VAL_INT:
-        fprintf(stderr, "%lld", (long long)v.as.i);
+        fprintf(out, "%lld", (long long)v.as.i);
         break;
     case VAL_FLOAT:
-        fprintf(stderr, "%f", v.as.f);
+        fprintf(out, "%f", v.as.f);
         break;
     case VAL_BOOL:
-        fprintf(stderr, v.as.b ? "true" : "false");
+        fprintf(out, v.as.b ? "true" : "false");
         break;
     case VAL_NULL:
-        fprintf(stderr, "null");
+        fprintf(out, "null");
         break;
     case VAL_UNDEFINED:
-        fprintf(stderr, "undefined");
+        fprintf(out, "undefined");
         break;
     case VAL_STRING:
-        fprintf(stderr, "%s", v.as.str->data);
+        fprintf(out, "%s", v.as.str->data);
         break;
     case VAL_TABLE:
-        fprintf(stderr, "<table>");
+        fprintf(out, "<table>");
         break;
     case VAL_FUNCTION:
-        fprintf(stderr, "<function>");
+        fprintf(out, "<function>");
         break;
     }
+}
+
+void print_value(Value v) {
+    print_value_to(stderr, v);
 }
 
 static void node_list_init(NodeList *list) {
@@ -1675,7 +1606,14 @@ static EvalResult eval_call(Value callee, int argc, Value *argv, const char *mod
     }
     Function *fn = callee.as.fn;
     if (fn->is_native) {
-        return ok(fn->native(argc, argv, NULL));
+        EvalResult err;
+        err.is_exception = false;
+        err.value = make_null();
+        Value out = fn->native(argc, argv, &err);
+        if (err.is_exception) {
+            return err;
+        }
+        return ok(out);
     }
     if (argc != fn->arity) {
         return error_msg("arity mismatch");
@@ -1934,6 +1872,11 @@ static EvalResult eval_node(Node *node, Env *env, const char *module_dir) {
     }
     case NODE_IMPORT: {
         const char *path = node->as.import_stmt.path;
+        Value lib;
+        if (runtime_import(path, env, &lib)) {
+            env_define(env, node->as.import_stmt.name, lib);
+            return ok(lib);
+        }
         char full[1024];
         FILE *f = try_open_module(path, module_dir, full, sizeof(full));
         if (!f) {
@@ -2070,6 +2013,15 @@ static Value native_freeze(int argc, Value *argv, EvalResult *err) {
     return make_null();
 }
 
+static Value native_is_absent(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isAbsent expects (value)", 23);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_UNDEFINED);
+}
+
 static Env *make_root_env(void) {
     Env *env = env_new(NULL);
     Function *clone_fn = xmalloc(sizeof(Function));
@@ -2086,6 +2038,11 @@ static Env *make_root_env(void) {
     freeze_fn->is_native = true;
     freeze_fn->native = native_freeze;
     env_define(env, "freeze", make_function(freeze_fn));
+
+    Function *is_absent_fn = xmalloc(sizeof(Function));
+    is_absent_fn->is_native = true;
+    is_absent_fn->native = native_is_absent;
+    env_define(env, "isAbsent", make_function(is_absent_fn));
 
     return env;
 }
@@ -2126,6 +2083,7 @@ int main(int argc, char **argv) {
     if (slash) {
         dir = xstrndup(argv[1], (size_t)(slash - argv[1]));
     }
+    runtime_init(argc, argv, dir);
     EvalResult res = eval_block(program, env, dir, false);
     if (res.is_exception) {
         fprintf(stderr, "uncaught exception: ");

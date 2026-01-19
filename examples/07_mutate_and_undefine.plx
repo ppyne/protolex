@@ -12,5 +12,8 @@ mutate obj {
     undefine obj.y
 }
 
-vx = obj.x      # 10
-vy = obj.y      # undefined (lookup échoue)
+vx = obj.x
+fallback = obj.y          # 2 (lookup falls back to proto)
+
+obj2 = [ proto = null ]
+absent = isAbsent(obj2.y) # true (lookup failed)

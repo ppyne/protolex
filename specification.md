@@ -111,6 +111,11 @@ An object without a `proto` key implicitly has `proto = null`.
 
 - `undefined` is **not** an assignable value
 
+- the language provides a standard predicate `isAbsent(expr)` to test whether
+  evaluating `expr` resulted in a missing slot (lookup failed)
+
+- absence is not a value and cannot be stored or compared
+
 - `null` is a valid value distinct from it
 
 ---

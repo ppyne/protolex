@@ -122,7 +122,7 @@ Consequences:
 
 - lookup can fall back to the prototype
 - no special "deleted" value
-- consistency with `undefined`
+- the standard predicate `isAbsent(expr)` can be used to test absence
 
 ---
 
