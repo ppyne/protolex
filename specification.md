@@ -33,6 +33,50 @@ Primitive types in 0.1:
 
 There is no conceptual distinction between expression and statement.
 
+### 1.1.1. Numeric literals
+
+Integer literals (`int`) may be written in:
+
+- decimal: `42`, `0`, `-17`
+
+- binary: `0b101010`, `0B101010`
+
+- octal: `0o52`, `0O52`
+
+- hexadecimal: `0x2A`, `0X2A`
+
+Rules:
+
+- prefixes select the base
+
+- there is no implicit octal (`0755` is decimal)
+
+- overflow beyond 64-bit signed range is an error
+
+- all forms produce an `int`
+
+Floating-point literals (`float`) may be written as:
+
+- decimal: `3.14`, `0.5`, `10.0`
+
+- no integer part: `.5`
+
+- no fractional part: `5.`
+
+- scientific notation: `1e3`, `1E3`, `1.5e-4`, `2E+6`
+
+Rules:
+
+- any presence of `.` or `e`/`E` makes the literal a `float`
+
+- no suffixes (`f`, `d`, etc.)
+
+- the value is a double-precision float
+
+- invalid forms are errors
+
+After parsing, there is no trace of the original literal form.
+
 ### 1.2. Type predicates
 
 The language provides explicit type predicates:

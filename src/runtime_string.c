@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -197,6 +198,170 @@ static Value native_string_to_float(int argc, Value *argv, EvalResult *err) {
     return make_float(val);
 }
 
+static void buffer_append(char **buf, size_t *len, size_t *cap, const char *data, size_t data_len) {
+    if (*cap < *len + data_len + 1) {
+        size_t new_cap = *cap ? *cap * 2 : 64;
+        while (new_cap < *len + data_len + 1) {
+            new_cap *= 2;
+        }
+        char *next = realloc(*buf, new_cap);
+        if (!next) {
+            runtime_fatal("out of memory");
+        }
+        *buf = next;
+        *cap = new_cap;
+    }
+    memcpy(*buf + *len, data, data_len);
+    *len += data_len;
+    (*buf)[*len] = '\0';
+}
+
+static Value native_string_format(int argc, Value *argv, EvalResult *err) {
+    if (argc < 1 || argv[0].type != VAL_STRING) {
+        runtime_set_error(err, "string.format expects (string, ...)");
+        return make_null();
+    }
+    const char *fmt = argv[0].as.str->data;
+    size_t fmt_len = argv[0].as.str->len;
+    size_t argi = 1;
+    char *out = NULL;
+    size_t out_len = 0;
+    size_t out_cap = 0;
+
+    size_t i = 0;
+    while (i < fmt_len) {
+        if (fmt[i] != '%') {
+            buffer_append(&out, &out_len, &out_cap, &fmt[i], 1);
+            i++;
+            continue;
+        }
+        if (i + 1 < fmt_len && fmt[i + 1] == '%') {
+            buffer_append(&out, &out_len, &out_cap, "%", 1);
+            i += 2;
+            continue;
+        }
+        size_t spec_start = i;
+        i++;
+        while (i < fmt_len && strchr("+- #0", fmt[i])) {
+            i++;
+        }
+        while (i < fmt_len && (fmt[i] >= '0' && fmt[i] <= '9')) {
+            i++;
+        }
+        if (i < fmt_len && fmt[i] == '.') {
+            i++;
+            while (i < fmt_len && (fmt[i] >= '0' && fmt[i] <= '9')) {
+                i++;
+            }
+        }
+        if (i < fmt_len && (fmt[i] == 'h' || fmt[i] == 'l' || fmt[i] == 'z' ||
+                            fmt[i] == 'j' || fmt[i] == 't')) {
+            i++;
+            if (i < fmt_len && (fmt[i - 1] == 'h' && fmt[i] == 'h')) {
+                i++;
+            } else if (i < fmt_len && (fmt[i - 1] == 'l' && fmt[i] == 'l')) {
+                i++;
+            }
+        }
+        if (i >= fmt_len) {
+            runtime_set_error(err, "string.format invalid format");
+            free(out);
+            return make_null();
+        }
+        char conv = fmt[i++];
+        if (argi >= (size_t)argc) {
+            runtime_set_error(err, "string.format missing argument");
+            free(out);
+            return make_null();
+        }
+        Value v = argv[argi++];
+        char spec[64];
+        size_t spec_len = i - spec_start;
+        if (spec_len >= sizeof(spec)) {
+            runtime_set_error(err, "string.format spec too long");
+            free(out);
+            return make_null();
+        }
+        memcpy(spec, fmt + spec_start, spec_len);
+        spec[spec_len] = '\0';
+
+        int needed = 0;
+        char *tmp = NULL;
+        switch (conv) {
+        case 'd':
+        case 'i':
+            if (v.type != VAL_INT) {
+                runtime_set_error(err, "string.format expected int");
+                free(out);
+                return make_null();
+            }
+            needed = snprintf(NULL, 0, spec, (long long)v.as.i);
+            tmp = xmalloc((size_t)needed + 1);
+            snprintf(tmp, (size_t)needed + 1, spec, (long long)v.as.i);
+            break;
+        case 'u':
+        case 'x':
+        case 'X':
+        case 'o':
+            if (v.type != VAL_INT) {
+                runtime_set_error(err, "string.format expected int");
+                free(out);
+                return make_null();
+            }
+            needed = snprintf(NULL, 0, spec, (unsigned long long)v.as.i);
+            tmp = xmalloc((size_t)needed + 1);
+            snprintf(tmp, (size_t)needed + 1, spec, (unsigned long long)v.as.i);
+            break;
+        case 'c':
+            if (v.type != VAL_INT) {
+                runtime_set_error(err, "string.format expected int");
+                free(out);
+                return make_null();
+            }
+            needed = snprintf(NULL, 0, spec, (int)v.as.i);
+            tmp = xmalloc((size_t)needed + 1);
+            snprintf(tmp, (size_t)needed + 1, spec, (int)v.as.i);
+            break;
+        case 'f':
+        case 'F':
+        case 'e':
+        case 'E':
+        case 'g':
+        case 'G':
+            if (v.type != VAL_FLOAT) {
+                runtime_set_error(err, "string.format expected float");
+                free(out);
+                return make_null();
+            }
+            needed = snprintf(NULL, 0, spec, v.as.f);
+            tmp = xmalloc((size_t)needed + 1);
+            snprintf(tmp, (size_t)needed + 1, spec, v.as.f);
+            break;
+        case 's':
+            if (v.type != VAL_STRING) {
+                runtime_set_error(err, "string.format expected string");
+                free(out);
+                return make_null();
+            }
+            needed = snprintf(NULL, 0, spec, v.as.str->data);
+            tmp = xmalloc((size_t)needed + 1);
+            snprintf(tmp, (size_t)needed + 1, spec, v.as.str->data);
+            break;
+        default:
+            runtime_set_error(err, "string.format unsupported spec");
+            free(out);
+            return make_null();
+        }
+
+        buffer_append(&out, &out_len, &out_cap, tmp, (size_t)needed);
+        free(tmp);
+    }
+
+    Value result = make_string_value(out ? out : "", out_len);
+    free(out);
+    return result;
+}
+
 Table *runtime_string_build(void) {
     if (runtime_ctx.string) {
         return runtime_ctx.string;
@@ -247,6 +412,11 @@ Table *runtime_string_build(void) {
     to_float_fn->is_native = true;
     to_float_fn->native = native_string_to_float;
     table_set(string, make_string_value("toFloat", 7), make_function(to_float_fn));
+
+    Function *format_fn = xmalloc(sizeof(Function));
+    format_fn->is_native = true;
+    format_fn->native = native_string_format;
+    table_set(string, make_string_value("format", 6), make_function(format_fn));
 
     table_freeze(string);
     runtime_ctx.string = string;

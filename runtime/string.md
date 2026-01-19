@@ -18,6 +18,7 @@ string.startsWith(s, prefix)    -> bool
 string.endsWith(s, suffix)      -> bool
 string.toInt(s)                 -> int
 string.toFloat(s)               -> float
+string.format(fmt, ...)         -> string
 ```
 
 ## Semantic rules
@@ -26,6 +27,7 @@ string.toFloat(s)               -> float
 - `split` returns a list-like structure (`isNil`, `head`, `tail`)
 - `indexOf` returns `-1` if not found
 - parsing errors raise exceptions
+- `format` follows `sprintf`-style formatting for `%d/%i/%u/%x/%X/%o/%c/%f/%e/%g/%s` and `%%`
 
 ## Examples
 
@@ -36,6 +38,7 @@ len = string.length("abc")
 joined = string.concat("a", "b")
 sub = string.slice("hello", 1, 4)
 parts = string.split("a,b,c", ",")
+msg = string.format("id=%d name=%s", 7, "proto")
 ```
 
 ## Possible errors

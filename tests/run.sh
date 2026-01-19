@@ -14,6 +14,7 @@ run_test() {
 run_test "lang_basics" "$ROOT/tests/lang_basics.plx"
 run_test "lang_absence" "$ROOT/tests/lang_absence.plx"
 run_test "lang_proto" "$ROOT/tests/lang_proto.plx"
+run_test "lang_literals" "$ROOT/tests/lang_literals.plx"
 run_test "lang_mutate" "$ROOT/tests/lang_mutate.plx"
 run_test "lang_try" "$ROOT/tests/lang_try.plx"
 

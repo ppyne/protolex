@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -746,6 +747,13 @@ static bool is_ident_part(char c) {
     return isalnum((unsigned char)c) || c == '_';
 }
 
+static int digit_value(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+    if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+    return -1;
+}
+
 static void token_list_init(TokenList *list) {
     list->items = NULL;
     list->count = 0;
@@ -848,14 +856,95 @@ static TokenList lex_source(const char *src) {
             token_list_push(&tokens, tok);
             continue;
         }
-        if (isdigit((unsigned char)c)) {
+        if (isdigit((unsigned char)c) || (c == '.' && lex.pos + 1 < lex.len &&
+                                          isdigit((unsigned char)lex.src[lex.pos + 1]))) {
             size_t start = lex.pos;
             bool is_float = false;
-            while (lex.pos < lex.len && isdigit((unsigned char)lex.src[lex.pos])) {
-                lex.pos++;
-                lex.col++;
+            int base = 10;
+
+            if (lex.src[lex.pos] == '0' && lex.pos + 1 < lex.len) {
+                char next = lex.src[lex.pos + 1];
+                if (next == 'x' || next == 'X') {
+                    base = 16;
+                    lex.pos += 2;
+                    lex.col += 2;
+                    start = lex.pos;
+                    while (lex.pos < lex.len && digit_value(lex.src[lex.pos]) >= 0 &&
+                           digit_value(lex.src[lex.pos]) < base) {
+                        lex.pos++;
+                        lex.col++;
+                    }
+                    size_t len = lex.pos - start;
+                    if (len == 0) {
+                        runtime_fatal("invalid hex literal");
+                    }
+                    char *num = xstrndup(lex.src + start, len);
+                    char *end = NULL;
+                    long long val = strtoll(num, &end, base);
+                    if (!end || *end != '\0' || val < INT64_MIN || val > INT64_MAX) {
+                        runtime_fatal("hex literal overflow");
+                    }
+                    Token tok = make_token(TOK_INT, line, col);
+                    tok.number = (double)val;
+                    tok.lexeme = num;
+                    token_list_push(&tokens, tok);
+                    continue;
+                }
+                if (next == 'b' || next == 'B') {
+                    base = 2;
+                    lex.pos += 2;
+                    lex.col += 2;
+                    start = lex.pos;
+                    while (lex.pos < lex.len && digit_value(lex.src[lex.pos]) >= 0 &&
+                           digit_value(lex.src[lex.pos]) < base) {
+                        lex.pos++;
+                        lex.col++;
+                    }
+                    size_t len = lex.pos - start;
+                    if (len == 0) {
+                        runtime_fatal("invalid binary literal");
+                    }
+                    char *num = xstrndup(lex.src + start, len);
+                    char *end = NULL;
+                    long long val = strtoll(num, &end, base);
+                    if (!end || *end != '\0' || val < INT64_MIN || val > INT64_MAX) {
+                        runtime_fatal("binary literal overflow");
+                    }
+                    Token tok = make_token(TOK_INT, line, col);
+                    tok.number = (double)val;
+                    tok.lexeme = num;
+                    token_list_push(&tokens, tok);
+                    continue;
+                }
+                if (next == 'o' || next == 'O') {
+                    base = 8;
+                    lex.pos += 2;
+                    lex.col += 2;
+                    start = lex.pos;
+                    while (lex.pos < lex.len && digit_value(lex.src[lex.pos]) >= 0 &&
+                           digit_value(lex.src[lex.pos]) < base) {
+                        lex.pos++;
+                        lex.col++;
+                    }
+                    size_t len = lex.pos - start;
+                    if (len == 0) {
+                        runtime_fatal("invalid octal literal");
+                    }
+                    char *num = xstrndup(lex.src + start, len);
+                    char *end = NULL;
+                    long long val = strtoll(num, &end, base);
+                    if (!end || *end != '\0' || val < INT64_MIN || val > INT64_MAX) {
+                        runtime_fatal("octal literal overflow");
+                    }
+                    Token tok = make_token(TOK_INT, line, col);
+                    tok.number = (double)val;
+                    tok.lexeme = num;
+                    token_list_push(&tokens, tok);
+                    continue;
+                }
             }
-            if (lex.pos < lex.len && lex.src[lex.pos] == '.') {
+
+            if (lex.src[lex.pos] == '.') {
                 is_float = true;
                 lex.pos++;
                 lex.col++;
@@ -863,11 +952,56 @@ static TokenList lex_source(const char *src) {
                     lex.pos++;
                     lex.col++;
                 }
+            } else {
+                while (lex.pos < lex.len && isdigit((unsigned char)lex.src[lex.pos])) {
+                    lex.pos++;
+                    lex.col++;
+                }
+                if (lex.pos < lex.len && lex.src[lex.pos] == '.') {
+                    is_float = true;
+                    lex.pos++;
+                    lex.col++;
+                    while (lex.pos < lex.len && isdigit((unsigned char)lex.src[lex.pos])) {
+                        lex.pos++;
+                        lex.col++;
+                    }
+                }
             }
+            if (lex.pos < lex.len && (lex.src[lex.pos] == 'e' || lex.src[lex.pos] == 'E')) {
+                is_float = true;
+                lex.pos++;
+                lex.col++;
+                if (lex.pos < lex.len && (lex.src[lex.pos] == '+' || lex.src[lex.pos] == '-')) {
+                    lex.pos++;
+                    lex.col++;
+                }
+                if (lex.pos >= lex.len || !isdigit((unsigned char)lex.src[lex.pos])) {
+                    runtime_fatal("invalid float literal");
+                }
+                while (lex.pos < lex.len && isdigit((unsigned char)lex.src[lex.pos])) {
+                    lex.pos++;
+                    lex.col++;
+                }
+            }
+
             size_t len = lex.pos - start;
             char *num = xstrndup(lex.src + start, len);
             Token tok = make_token(is_float ? TOK_FLOAT : TOK_INT, line, col);
-            tok.number = strtod(num, NULL);
+            if (is_float) {
+                char *end = NULL;
+                double val = strtod(num, &end);
+                if (!end || *end != '\0') {
+                    runtime_fatal("invalid float literal");
+                }
+                tok.number = val;
+            } else {
+                char *end = NULL;
+                long long val = strtoll(num, &end, 10);
+                if (!end || *end != '\0' || val < INT64_MIN || val > INT64_MAX) {
+                    runtime_fatal("int literal overflow");
+                }
+                tok.number = (double)val;
+            }
             tok.lexeme = num;
             token_list_push(&tokens, tok);
             continue;
