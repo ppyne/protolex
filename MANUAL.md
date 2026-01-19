@@ -233,6 +233,9 @@ string.forEach("hi", fn(c, i) {
 })
 ```
 
+`string.forEach` iterates bytes (one-byte strings). There is no Unicode-aware
+iterator in the runtime today.
+
 ## 7. Core data structures
 
 All structures live in the corelib `ds` module.

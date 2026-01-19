@@ -137,7 +137,8 @@ An object is a table.
 
 - any other value assigned to `proto` is a fatal error
 
-An object without a `proto` key implicitly has `proto = null`.
+If a table literal does not define `proto`, its prototype is treated as `null`
+for lookup.
 
 ---
 
@@ -279,7 +280,7 @@ Any attempt raises an exception.
 
 - thawing is **lexical**
 
-- freeze is automatically restored at block exit
+- the runtime restores the previous freeze state at block exit
 
 - no permanent mutation is possible
 
