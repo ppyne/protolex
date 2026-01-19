@@ -78,6 +78,9 @@ name = user.name
 age = user.age
 ```
 
+Protolex is object-oriented in a prototype-based way: objects are tables and
+behavior is modeled with explicit functions plus prototypes.
+
 ### Prototypes
 
 A table can reference another table as its prototype via the `proto` slot.

@@ -4,7 +4,7 @@
 
 ***Because explicitness defines existence.***
 
-Protolex is a minimalist, prototype-based language with explicit control over
+Protolex is a minimalist, prototype-based, object-oriented language with explicit control over
 mutation, control flow, and dependencies. This repository contains:
 
 Key constraints: no loops, no `return`, no globals; iteration is library-defined.

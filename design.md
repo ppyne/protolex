@@ -42,7 +42,8 @@ Direct consequences:
 
 ## 3. Objects = tables, explicit prototypes
 
-Protolex is **prototype-based**, but in a strict and minimal way:
+Protolex is **object-oriented** in a prototype-based way, but in a strict and
+minimal form:
 
 - an object is a table
 - a prototype is a table referenced by the `proto` key

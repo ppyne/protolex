@@ -198,7 +198,8 @@ max2 = fn(a, b) { if a > b { a } else { b } }
 
 ### No classes, constructors, or methods
 
-Protolex uses tables and explicit functions, not classes or methods.
+Protolex is object-oriented in a prototype-based way. It uses tables and
+explicit functions, not classes or methods.
 
 ```protolex
 point = [ x = 3, y = 4 ]
@@ -256,7 +257,8 @@ if ds.List.isNil(list) { "empty" } else { "not empty" }
 
 ### No associative arrays as objects
 
-Use `Map` for key/value storage, and tables for structured data.
+Protolex is object-oriented in a prototype-based way. Use `Map` for key/value
+storage, and tables for structured data.
 
 ```protolex
 import ds from "corelib/ds/index.plx"
