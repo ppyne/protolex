@@ -150,6 +150,19 @@ is considered a **virtue**, not a weakness:
 - no hidden capture
 - no implicit dependency on context
 
+### 8.1 No `return`
+
+Protolex has no `return` statement.
+The result of a function is the value of its last evaluated expression.
+
+```protolex
+abs = fn(x) {
+    if x < 0 { -x } else { x }
+}
+```
+
+Early exits are expressed by structuring the control flow explicitly.
+
 ---
 
 ## 9. No operator overloading

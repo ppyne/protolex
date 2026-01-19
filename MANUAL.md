@@ -92,7 +92,7 @@ role = user.role   # "guest" (from proto)
 
 ### clone
 
-`clone(x)` creates a new table whose `proto` is `x`.
+`clone(x)` creates a new table whose `proto` is `base`.
 
 ```protolex
 base = [ x = 1 ]
@@ -125,11 +125,29 @@ add = fn(a, b) { a + b }
 sum = add(2, 3)  # 5
 ```
 
-`if` is an expression:
+### No `return`
+
+Protolex has no `return` statement. The last expression is the result.
 
 ```protolex
 abs = fn(x) {
     if x < 0 { -x } else { x }
+}
+```
+
+Instead of early returns, make branches produce the value:
+
+```protolex
+scale = fn(x) {
+    if x == 0 { 0 } else { x * 2 }
+}
+```
+
+`if` is an expression:
+
+```protolex
+max2 = fn(a, b) {
+    if a > b { a } else { b }
 }
 ```
 

@@ -228,7 +228,22 @@ Using a parameter named `self` is a **convention**, not a keyword.
 
 No implicit semantics are attached to calls.
 
-### 5.3. "Method" call convention
+### 5.3. No `return`
+
+Protolex has no `return` statement.
+
+- a function's result is the value of its last evaluated expression
+- early exits are expressed by structuring control flow (e.g., `if` expressions)
+
+Example:
+
+```protolex
+abs = fn(x) {
+    if x < 0 { -x } else { x }
+}
+```
+
+### 5.4. "Method" call convention
 
 `obj.f(obj)`
 
