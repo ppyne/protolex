@@ -106,4 +106,6 @@ void table_freeze(Table *t);
 void print_value(Value v);
 void print_value_to(FILE *out, Value v);
 
+EvalResult call_function(Value callee, int argc, Value *argv, const char *module_dir);
+
 #endif

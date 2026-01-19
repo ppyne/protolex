@@ -28,13 +28,14 @@ mutate List {
         if items.proto == List {
             items
         } else if items.proto == Array {
-            i = Array.length(items) - 1
-            acc = List.nil
-            while i >= 0 {
-                acc = List.cons(Array.get(items, i), acc)
-                i = i - 1
+            loop = fn(i, acc) {
+                if i < 0 {
+                    acc
+                } else {
+                    loop(i - 1, List.cons(Array.get(items, i), acc))
+                }
             }
-            acc
+            loop(Array.length(items) - 1, List.nil)
         } else {
             throw "List.of expects Array or List"
         }
@@ -47,12 +48,15 @@ mutate Array {
             items
         } else if items.proto == List {
             arr = Array.new()
-            cur = items
-            while !List.isNil(cur) {
-                Array.push(arr, List.head(cur))
-                cur = List.tail(cur)
+            loop = fn(lst) {
+                if List.isNil(lst) {
+                    arr
+                } else {
+                    Array.push(arr, List.head(lst))
+                    loop(List.tail(lst))
+                }
             }
-            arr
+            loop(items)
         } else {
             throw "Array.of expects Array or List"
         }

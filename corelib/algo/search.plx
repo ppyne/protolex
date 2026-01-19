@@ -8,37 +8,37 @@ Search = [
 ]
 
 Search.linear = fn(arr, value) {
-    i = 0
     n = ds.Array.length(arr)
-
-    while i < n {
-        if ds.Array.get(arr, i) == value {
+    loop = fn(i) {
+        if i >= n {
+            null
+        } else if ds.Array.get(arr, i) == value {
             i
+        } else {
+            loop(i + 1)
         }
-        i = i + 1
     }
-
-    null
+    loop(0)
 }
 
 Search.binary = fn(arr, value, less) {
-    low = 0
-    high = ds.Array.length(arr) - 1
-
-    while low <= high {
-        mid = (low + high) / 2
-        midval = ds.Array.get(arr, mid)
-
-        if midval == value {
-            mid
-        } else if less(midval, value) {
-            low = mid + 1
+    loop = fn(low, high) {
+        if low > high {
+            null
         } else {
-            high = mid - 1
+            mid = (low + high) / 2
+            midval = ds.Array.get(arr, mid)
+
+            if midval == value {
+                mid
+            } else if less(midval, value) {
+                loop(mid + 1, high)
+            } else {
+                loop(low, mid - 1)
+            }
         }
     }
-
-    null
+    loop(0, ds.Array.length(arr) - 1)
 }
 
 Search.bfs = fn(g, start) {
@@ -53,22 +53,31 @@ Search.bfs = fn(g, start) {
         ds.Queue.enqueue(q, start)
         ds.Array.push(order, start)
 
-        while q.head < ds.Array.length(q._impl) {
-            node = ds.Queue.dequeue(q)
-            neighbors = ds.Graph.neighbors(g, node)
-            i = 0
-            n = ds.Array.length(neighbors)
-            while i < n {
+        visit_neighbors = fn(neighbors, i) {
+            if i >= ds.Array.length(neighbors) {
+                null
+            } else {
                 nb = ds.Array.get(neighbors, i)
                 if !ds.Set.contains(visited, nb) {
                     ds.Set.add(visited, nb)
                     ds.Queue.enqueue(q, nb)
                     ds.Array.push(order, nb)
                 }
-                i = i + 1
+                visit_neighbors(neighbors, i + 1)
             }
         }
-        order
+
+        loop = fn() {
+            if q.head >= ds.Array.length(q._impl) {
+                order
+            } else {
+                node = ds.Queue.dequeue(q)
+                neighbors = ds.Graph.neighbors(g, node)
+                visit_neighbors(neighbors, 0)
+                loop()
+            }
+        }
+        loop()
     }
 }
 

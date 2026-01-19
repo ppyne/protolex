@@ -36,21 +36,26 @@ Stack.of = fn(items) {
         items
     } else if items.proto == Array {
         st = Stack.new()
-        i = 0
-        n = Array.length(items)
-        while i < n {
-            Stack.push(st, Array.get(items, i))
-            i = i + 1
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Stack.push(st, Array.get(items, i))
+                loop(i + 1)
+            } else {
+                st
+            }
         }
-        st
+        loop(0)
     } else if items.proto == List {
         st = Stack.new()
-        cur = items
-        while !List.isNil(cur) {
-            Stack.push(st, List.head(cur))
-            cur = List.tail(cur)
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                st
+            } else {
+                Stack.push(st, List.head(lst))
+                loop(List.tail(lst))
+            }
         }
-        st
+        loop(items)
     } else {
         throw "Stack.of expects Array or List"
     }

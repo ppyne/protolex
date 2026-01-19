@@ -72,6 +72,29 @@ List.fold = fn(f, acc, list) {
     }
 }
 
+List.forEach = fn(f, list) {
+    if list.isNil {
+        null
+    } else {
+        f(list.head)
+        List.forEach(f, list.tail)
+    }
+}
+
+List.filter = fn(pred, list) {
+    if list.isNil {
+        List.nil
+    } else {
+        h = list.head
+        t = List.filter(pred, list.tail)
+        if pred(h) {
+            List.cons(h, t)
+        } else {
+            t
+        }
+    }
+}
+
 List.reverse = fn(list) {
     loop = fn(lst, acc) {
         if lst.isNil {

@@ -216,7 +216,7 @@ Collection construction is performed by the corelib:
 
 ```protolex
 List.of(listOrArray)
-Map.of(tableOrMap)
+Map.of(pairs)
 ```
 
 This allows:
@@ -307,7 +307,24 @@ It is intentionally demanding.
 
 ---
 
-## 17. Conclusion
+## 17. Iteration is library-defined
+
+Protolex has **no loop syntax**. There is no `for`, no `foreach`, and no `while`.
+Iteration is always expressed by higher-order functions provided by libraries.
+
+This is consistent with:
+
+- unordered tables
+
+- data structures living in the corelib
+
+- no control-flow magic
+
+The language provides only blocks and functions.
+
+---
+
+## 18. Conclusion
 
 Protolex rests on a simple idea:
 

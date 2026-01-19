@@ -9,6 +9,13 @@ assert = fn(cond, msg) {
 assert(string.length("abc") == 3, "length")
 assert(string.concat("a", "b") == "ab", "concat")
 assert(string.slice("hello", 1, 4) == "ell", "slice")
+assert(string.charAt("hello", 1) == "e", "charAt")
+assert(string.repeat("ha", 3) == "hahaha", "repeat")
+state = [ count = 0 ]
+string.forEach("abc", fn(c, i) {
+    mutate state { state.count = state.count + 1 }
+})
+assert(state.count == 3, "forEach")
 assert(string.indexOf("hello", "ll") == 2, "indexOf")
 assert(string.startsWith("hello", "he") == true, "startsWith")
 assert(string.endsWith("hello", "lo") == true, "endsWith")

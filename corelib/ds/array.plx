@@ -59,6 +59,42 @@ Array.pop = fn(arr) {
     value
 }
 
+Array.forEach = fn(f, arr) {
+    loop = fn(i) {
+        if i < Array.length(arr) {
+            f(Array.get(arr, i))
+            loop(i + 1)
+        } else {
+            null
+        }
+    }
+    loop(0)
+}
+
+Array.map = fn(f, arr) {
+    out = Array.new()
+    loop = fn(i) {
+        if i < Array.length(arr) {
+            Array.push(out, f(Array.get(arr, i)))
+            loop(i + 1)
+        } else {
+            out
+        }
+    }
+    loop(0)
+}
+
+Array.fold = fn(f, acc, arr) {
+    loop = fn(i, a) {
+        if i < Array.length(arr) {
+            loop(i + 1, f(a, Array.get(arr, i)))
+        } else {
+            a
+        }
+    }
+    loop(0, acc)
+}
+
 freeze(Array)
 
 Array

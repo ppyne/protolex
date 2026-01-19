@@ -22,8 +22,6 @@ typedef enum {
     NODE_DOT,
     NODE_INDEX,
     NODE_IF,
-    NODE_WHILE,
-    NODE_FOR,
     NODE_FN,
     NODE_IMPORT,
     NODE_MUTATE,
@@ -85,15 +83,6 @@ struct Node {
             Node *then_branch;
             Node *else_branch;
         } if_expr;
-        struct {
-            Node *cond;
-            Node *body;
-        } while_expr;
-        struct {
-            char *name;
-            Node *iterable;
-            Node *body;
-        } for_expr;
         struct {
             StrList params;
             Node *body;
@@ -1312,23 +1301,6 @@ static Node *parse_primary(Parser *p) {
         }
         return node;
     }
-    if (match(p, TOK_WHILE)) {
-        Node *node = node_new(NODE_WHILE, tok->line, tok->col);
-        node->as.while_expr.cond = parse_expression(p);
-        skip_newlines(p);
-        node->as.while_expr.body = parse_block(p);
-        return node;
-    }
-    if (match(p, TOK_FOR)) {
-        Node *node = node_new(NODE_FOR, tok->line, tok->col);
-        Token *name = consume(p, TOK_IDENT, "expected loop variable");
-        consume(p, TOK_IN, "expected 'in'");
-        node->as.for_expr.name = name->lexeme;
-        node->as.for_expr.iterable = parse_expression(p);
-        skip_newlines(p);
-        node->as.for_expr.body = parse_block(p);
-        return node;
-    }
     if (match(p, TOK_LBRACKET)) {
         Node *node = node_new(NODE_TABLE, tok->line, tok->col);
         table_literal_init(&node->as.table.items);
@@ -1759,6 +1731,10 @@ static EvalResult eval_call(Value callee, int argc, Value *argv, const char *mod
     return eval_block(fn->body, call_env, module_dir, true);
 }
 
+EvalResult call_function(Value callee, int argc, Value *argv, const char *module_dir) {
+    return eval_call(callee, argc, argv, module_dir);
+}
+
 static EvalResult eval_undefine(Node *node, Env *env, const char *module_dir) {
     Node *target = node->as.undefine.target;
     if (target->type != NODE_DOT && target->type != NODE_INDEX) {
@@ -1953,44 +1929,6 @@ static EvalResult eval_node(Node *node, Env *env, const char *module_dir) {
         }
         if (node->as.if_expr.else_branch) {
             return eval_block(node->as.if_expr.else_branch, env, module_dir, true);
-        }
-        return ok(make_null());
-    }
-    case NODE_WHILE: {
-        while (true) {
-            EvalResult cond = eval_node(node->as.while_expr.cond, env, module_dir);
-            if (cond.is_exception) {
-                return cond;
-            }
-            if (!value_is_truthy(cond.value)) {
-                break;
-            }
-            EvalResult body = eval_block(node->as.while_expr.body, env, module_dir, true);
-            if (body.is_exception) {
-                return body;
-            }
-        }
-        return ok(make_null());
-    }
-    case NODE_FOR: {
-        EvalResult iter_r = eval_node(node->as.for_expr.iterable, env, module_dir);
-        if (iter_r.is_exception) {
-            return iter_r;
-        }
-        if (iter_r.value.type != VAL_TABLE) {
-            return error_msg("for-in on non-table");
-        }
-        Table *t = iter_r.value.as.table;
-        for (size_t i = 0; i < t->map.capacity; i++) {
-            Entry *e = &t->map.entries[i];
-            if (e->used && !e->tombstone) {
-                Env *loop_env = env_new(env);
-                env_define(loop_env, node->as.for_expr.name, e->key);
-                EvalResult body = eval_block(node->as.for_expr.body, loop_env, module_dir, true);
-                if (body.is_exception) {
-                    return body;
-                }
-            }
         }
         return ok(make_null());
     }

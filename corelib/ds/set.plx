@@ -44,27 +44,28 @@ Set.of = fn(items) {
         items
     } else if items.proto == Array {
         s = Set.new()
-        i = 0
-        n = Array.length(items)
-        while i < n {
-            Set.add(s, Array.get(items, i))
-            i = i + 1
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Set.add(s, Array.get(items, i))
+                loop(i + 1)
+            } else {
+                s
+            }
         }
-        s
+        loop(0)
     } else if items.proto == List {
         s = Set.new()
-        cur = items
-        while !List.isNil(cur) {
-            Set.add(s, List.head(cur))
-            cur = List.tail(cur)
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                s
+            } else {
+                Set.add(s, List.head(lst))
+                loop(List.tail(lst))
+            }
         }
-        s
+        loop(items)
     } else {
-        s = Set.new()
-        for k in items {
-            Set.add(s, k)
-        }
-        s
+        throw "Set.of expects Array, List, or Set"
     }
 }
 

@@ -23,52 +23,60 @@ Tree.empty = fn() {
 Tree.insert = fn(t, value, compare) {
     data = t._impl.data
     n = Array.length(data)
-    i = n - 1
     Array.push(data, value)
-    done = false
-    while i >= 0 && !done {
-        if compare(value, Array.get(data, i)) {
+    shift = fn(i) {
+        if i < 0 {
+            Array.set(data, 0, value)
+        } else if compare(value, Array.get(data, i)) {
             Array.set(data, i + 1, Array.get(data, i))
-            i = i - 1
+            shift(i - 1)
         } else {
-            done = true
+            Array.set(data, i + 1, value)
         }
     }
-    Array.set(data, i + 1, value)
+    shift(n - 1)
 }
 
 Tree.contains = fn(t, value, compare) {
     data = t._impl.data
-    i = 0
-    n = Array.length(data)
-    while i < n {
-        v = Array.get(data, i)
-        if !compare(v, value) && !compare(value, v) {
-            true
+    loop = fn(i) {
+        if i >= Array.length(data) {
+            false
+        } else {
+            v = Array.get(data, i)
+            if !compare(v, value) && !compare(value, v) {
+                true
+            } else {
+                loop(i + 1)
+            }
         }
-        i = i + 1
     }
-    false
+    loop(0)
 }
 
 Tree.remove = fn(t, value, compare) {
     data = t._impl.data
-    i = 0
-    n = Array.length(data)
-    while i < n {
-        v = Array.get(data, i)
-        if !compare(v, value) && !compare(value, v) {
-            j = i
-            while j < n - 1 {
-                Array.set(data, j, Array.get(data, j + 1))
-                j = j + 1
-            }
+    shift_left = fn(j) {
+        if j >= Array.length(data) - 1 {
             Array.pop(data)
-            i = n
         } else {
-            i = i + 1
+            Array.set(data, j, Array.get(data, j + 1))
+            shift_left(j + 1)
         }
     }
+    loop = fn(i) {
+        if i >= Array.length(data) {
+            null
+        } else {
+            v = Array.get(data, i)
+            if !compare(v, value) && !compare(value, v) {
+                shift_left(i)
+            } else {
+                loop(i + 1)
+            }
+        }
+    }
+    loop(0)
 }
 
 Tree.of = fn(items, compare) {
@@ -76,21 +84,26 @@ Tree.of = fn(items, compare) {
         items
     } else if items.proto == Array {
         t = Tree.empty()
-        i = 0
-        n = Array.length(items)
-        while i < n {
-            Tree.insert(t, Array.get(items, i), compare)
-            i = i + 1
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Tree.insert(t, Array.get(items, i), compare)
+                loop(i + 1)
+            } else {
+                t
+            }
         }
-        t
+        loop(0)
     } else if items.proto == List {
         t = Tree.empty()
-        cur = items
-        while !List.isNil(cur) {
-            Tree.insert(t, List.head(cur), compare)
-            cur = List.tail(cur)
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                t
+            } else {
+                Tree.insert(t, List.head(lst), compare)
+                loop(List.tail(lst))
+            }
         }
-        t
+        loop(items)
     } else {
         throw "Tree.of expects Array or List"
     }

@@ -470,6 +470,22 @@ These structures are implemented as ordinary objects with controlled internal mu
 
 ---
 
+## 12.1. Iteration
+
+Protolex has **no loop syntax**. All iteration is provided by libraries as
+higher-order functions.
+
+Examples include:
+
+- `List.forEach`, `List.map`, `List.fold`, `List.filter`
+
+- `Array.forEach`, `Array.map`, `Array.fold`, `Array.length`
+
+The language provides only blocks and functions; iteration is explicit and
+library-defined.
+
+---
+
 ## 13. Explicitly absent mechanisms
 
 Protolex does not define:
@@ -493,6 +509,8 @@ Protolex does not define:
 - metaclasses
 
 - silent monkey-patching
+
+- `for`, `foreach`, `while`
 
 ---
 

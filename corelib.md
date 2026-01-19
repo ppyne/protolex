@@ -73,11 +73,6 @@ The corelib is organized into **object namespaces**:
 
 `ds    // data structures algo  // algorithms`
 
-### 1.5. Primitive helpers
-
-`int`, `float`, and `math` are runtime libraries, not corelib modules. They are
-documented under `runtime/` and do not alter the language.
-
 ### 1.4. File organization
 
 The corelib is split by topic into dedicated folders:
@@ -93,6 +88,36 @@ Entry points are:
 `import algo from "corelib/algo/index.plx"`
 
 ---
+
+### 1.5. Iteration
+
+The language provides no loop syntax. Iteration is expressed through library
+functions such as:
+
+- `List.forEach`, `List.map`, `List.fold`, `List.filter`
+
+- `Array.forEach`, `Array.map`, `Array.fold`, `Array.length`
+
+Control flow remains explicit and local to the library.
+
+Example:
+
+```protolex
+import ds from "corelib/ds/index.plx"
+
+sum = ds.Array.fold(
+    fn(acc, x) { acc + x },
+    0,
+    ds.Array.of(ds.List.of([1, 2, 3]))
+)
+```
+
+---
+
+### 1.6. Primitive helpers
+
+`int`, `float`, and `math` are runtime libraries, not corelib modules. They are
+documented under `runtime/` and do not alter the language.
 
 ## 2. Fundamental data structures (`ds`)
 
@@ -345,18 +370,18 @@ Builds a dynamic array from a list or an array.
 ### Map.of
 
 ```protolex
-ds.Map.of(tableOrMap)
+ds.Map.of(pairs)
 ```
 
-Builds a map from a map or any table-like object by copying its slots.
+Builds a map from a list or array of `{ key, value }` pairs.
 
 ### Set.of
 
 ```protolex
-ds.Set.of(listOrArrayOrTableOrSet)
+ds.Set.of(listOrArrayOrSet)
 ```
 
-Builds a set from a set, list, array, or table (keys are used).
+Builds a set from a set, list, or array.
 
 ### Stack.of
 
@@ -385,10 +410,10 @@ Builds a tree by inserting items in order using `compare`.
 ### Graph.of
 
 ```protolex
-ds.Graph.of(adjacency)
+ds.Graph.of(edges)
 ```
 
-Builds a graph from an adjacency table where each key maps to a list or array of neighbors.
+Builds a graph from a list or array of `{ from, to }` edges.
 
 These functions replace any attempt at list or map literals, which are intentionally absent from the language.
 

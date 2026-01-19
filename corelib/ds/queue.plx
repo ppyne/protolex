@@ -37,21 +37,26 @@ Queue.of = fn(items) {
         items
     } else if items.proto == Array {
         q = Queue.new()
-        i = 0
-        n = Array.length(items)
-        while i < n {
-            Queue.enqueue(q, Array.get(items, i))
-            i = i + 1
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Queue.enqueue(q, Array.get(items, i))
+                loop(i + 1)
+            } else {
+                q
+            }
         }
-        q
+        loop(0)
     } else if items.proto == List {
         q = Queue.new()
-        cur = items
-        while !List.isNil(cur) {
-            Queue.enqueue(q, List.head(cur))
-            cur = List.tail(cur)
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                q
+            } else {
+                Queue.enqueue(q, List.head(lst))
+                loop(List.tail(lst))
+            }
         }
-        q
+        loop(items)
     } else {
         throw "Queue.of expects Array or List"
     }

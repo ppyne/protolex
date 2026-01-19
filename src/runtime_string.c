@@ -198,6 +198,72 @@ static Value native_string_to_float(int argc, Value *argv, EvalResult *err) {
     return make_float(val);
 }
 
+static Value native_string_char_at(int argc, Value *argv, EvalResult *err) {
+    if (argc != 2 || argv[0].type != VAL_STRING || argv[1].type != VAL_INT) {
+        runtime_set_error(err, "string.charAt expects (string, int)");
+        return make_null();
+    }
+    int64_t idx = argv[1].as.i;
+    if (idx < 0 || (size_t)idx >= argv[0].as.str->len) {
+        runtime_set_error(err, "string.charAt out of bounds");
+        return make_null();
+    }
+    return make_string_value(argv[0].as.str->data + idx, 1);
+}
+
+static Value native_string_repeat(int argc, Value *argv, EvalResult *err) {
+    if (argc != 2 || argv[0].type != VAL_STRING || argv[1].type != VAL_INT) {
+        runtime_set_error(err, "string.repeat expects (string, int)");
+        return make_null();
+    }
+    int64_t n = argv[1].as.i;
+    if (n < 0) {
+        runtime_set_error(err, "string.repeat expects non-negative");
+        return make_null();
+    }
+    if (n == 0 || argv[0].as.str->len == 0) {
+        return make_string_value("", 0);
+    }
+    size_t part_len = argv[0].as.str->len;
+    if (n > (int64_t)(SIZE_MAX / part_len)) {
+        runtime_set_error(err, "string.repeat overflow");
+        return make_null();
+    }
+    size_t total_len = part_len * (size_t)n;
+    char *buf = xmalloc(total_len);
+    size_t offset = 0;
+    for (int64_t i = 0; i < n; i++) {
+        memcpy(buf + offset, argv[0].as.str->data, part_len);
+        offset += part_len;
+    }
+    Value out = make_string_value(buf, total_len);
+    free(buf);
+    return out;
+}
+
+static Value native_string_for_each(int argc, Value *argv, EvalResult *err) {
+    if (argc != 2 || argv[0].type != VAL_STRING || argv[1].type != VAL_FUNCTION) {
+        runtime_set_error(err, "string.forEach expects (string, function)");
+        return make_null();
+    }
+    Value str = argv[0];
+    Value fn = argv[1];
+    for (size_t i = 0; i < str.as.str->len; i++) {
+        Value ch = make_string_value(str.as.str->data + i, 1);
+        Value args[2];
+        args[0] = ch;
+        args[1] = make_int((int64_t)i);
+        EvalResult res = call_function(fn, 2, args, runtime_ctx.module_dir);
+        if (res.is_exception) {
+            if (err) {
+                *err = res;
+            }
+            return make_null();
+        }
+    }
+    return make_null();
+}
+
 static void buffer_append(char **buf, size_t *len, size_t *cap, const char *data, size_t data_len) {
     if (*cap < *len + data_len + 1) {
         size_t new_cap = *cap ? *cap * 2 : 64;
@@ -412,6 +478,21 @@ Table *runtime_string_build(void) {
     to_float_fn->is_native = true;
     to_float_fn->native = native_string_to_float;
     table_set(string, make_string_value("toFloat", 7), make_function(to_float_fn));
+
+    Function *char_at_fn = xmalloc(sizeof(Function));
+    char_at_fn->is_native = true;
+    char_at_fn->native = native_string_char_at;
+    table_set(string, make_string_value("charAt", 6), make_function(char_at_fn));
+
+    Function *repeat_fn = xmalloc(sizeof(Function));
+    repeat_fn->is_native = true;
+    repeat_fn->native = native_string_repeat;
+    table_set(string, make_string_value("repeat", 6), make_function(repeat_fn));
+
+    Function *for_each_fn = xmalloc(sizeof(Function));
+    for_each_fn->is_native = true;
+    for_each_fn->native = native_string_for_each;
+    table_set(string, make_string_value("forEach", 7), make_function(for_each_fn));
 
     Function *format_fn = xmalloc(sizeof(Function));
     format_fn->is_native = true;

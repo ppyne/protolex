@@ -65,27 +65,32 @@ Graph.addEdge = fn(g, a, b) {
 Graph.of = fn(adj) {
     if adj.proto == Graph {
         adj
-    } else {
+    } else if adj.proto == Array {
         g = Graph.new()
-        for k in adj {
-            Graph.addNode(g, k)
-            neighbors = adj[k]
-            if neighbors.proto == Array {
-                i = 0
-                n = Array.length(neighbors)
-                while i < n {
-                    Graph.addEdge(g, k, Array.get(neighbors, i))
-                    i = i + 1
-                }
-            } else if neighbors.proto == List {
-                cur = neighbors
-                while !List.isNil(cur) {
-                    Graph.addEdge(g, k, List.head(cur))
-                    cur = List.tail(cur)
-                }
+        loop = fn(i) {
+            if i < Array.length(adj) {
+                edge = Array.get(adj, i)
+                Graph.addEdge(g, edge.from, edge.to)
+                loop(i + 1)
+            } else {
+                g
             }
         }
-        g
+        loop(0)
+    } else if adj.proto == List {
+        g = Graph.new()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                g
+            } else {
+                edge = List.head(lst)
+                Graph.addEdge(g, edge.from, edge.to)
+                loop(List.tail(lst))
+            }
+        }
+        loop(adj)
+    } else {
+        throw "Graph.of expects Array, List, or Graph"
     }
 }
 
