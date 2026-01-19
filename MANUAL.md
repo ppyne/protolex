@@ -193,6 +193,7 @@ mutate obj {
 ## 6. Iteration (no loops)
 
 Protolex has no `for` or `while`. Iteration happens through library functions.
+When you need a custom traversal, use explicit recursion.
 
 ### Lists
 
@@ -207,6 +208,18 @@ list = ds.List.cons(1,
 mapped = ds.List.map(fn(x) { x * 2 }, list)
 
 sum = ds.List.fold(fn(acc, x) { acc + x }, 0, list)
+```
+
+Recursive iteration example:
+
+```protolex
+sum_list = fn(lst) {
+    if ds.List.isNil(lst) {
+        0
+    } else {
+        ds.List.head(lst) + sum_list(ds.List.tail(lst))
+    }
+}
 ```
 
 ### Arrays

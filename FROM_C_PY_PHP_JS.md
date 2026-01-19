@@ -18,7 +18,7 @@ It focuses on concrete differences and working patterns.
 ### No loops
 
 There is no `for` / `while` / `foreach`.
-Iteration is always done by library functions.
+Iteration is always done by library functions, or by writing explicit recursion.
 
 ```protolex
 import ds from "corelib/ds/index.plx"
@@ -29,6 +29,20 @@ ds.Array.push(arr, 1)
 ds.Array.push(arr, 2)
 
 ds.Array.forEach(fn(x) { x }, arr)
+```
+
+Recursive iteration example:
+
+```protolex
+import ds from "corelib/ds/index.plx"
+
+sum_list = fn(lst) {
+    if ds.List.isNil(lst) {
+        0
+    } else {
+        ds.List.head(lst) + sum_list(ds.List.tail(lst))
+    }
+}
 ```
 
 ### No `return`
