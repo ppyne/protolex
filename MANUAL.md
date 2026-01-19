@@ -188,7 +188,7 @@ list = ds.List.cons(1,
 
 mapped = ds.List.map(fn(x) { x * 2 }, list)
 
-sum = ds.List.fold(fn(x, acc) { x + acc }, 0, list)
+sum = ds.List.fold(fn(acc, x) { acc + x }, 0, list)
 ```
 
 ### Arrays
@@ -429,4 +429,111 @@ if first == null {
 }
 
 n = string.toInt(first)
+```
+
+## 11. Real task examples
+
+### 11.1 CLI tool: file stats (lines/words/chars)
+
+This tool expects a file path and prints basic counts.
+
+```protolex
+import sys from "runtime/sys"
+import io from "runtime/io"
+import string from "runtime/string"
+import ds from "corelib/ds/index.plx"
+
+nth = fn(lst, idx) {
+    if ds.List.isNil(lst) {
+        null
+    } else if idx == 0 {
+        ds.List.head(lst)
+    } else {
+        nth(ds.List.tail(lst), idx - 1)
+    }
+}
+
+path = nth(sys.args, 0)
+
+if path == null {
+    throw "usage: filestats <path>"
+}
+
+f = io.open(path, "r")
+text = ""
+try {
+    text = io.read(f)
+} finally {
+    io.close(f)
+}
+
+lines = ds.List.length(string.split(text, "\n"))
+words = ds.List.length(string.split(text, " "))
+chars = string.length(text)
+
+report = string.format("lines=%d words=%d chars=%d\n", lines, words, chars)
+io.write(io.stdout, report)
+```
+
+### 11.2 File processing: extract error lines
+
+Read a log file and keep only lines that contain `ERROR`.
+
+```protolex
+import io from "runtime/io"
+import string from "runtime/string"
+import ds from "corelib/ds/index.plx"
+
+path = "app.log"
+
+f = io.open(path, "r")
+text = ""
+try {
+    text = io.read(f)
+} finally {
+    io.close(f)
+}
+
+lines = string.split(text, "\n")
+errors = ds.List.filter(fn(line) {
+    string.indexOf(line, "ERROR") >= 0
+}, lines)
+
+out = ds.List.fold(fn(acc, line) {
+    string.concat(acc, string.concat(line, "\n"))
+}, "", errors)
+
+io.write(io.stdout, out)
+```
+
+### 11.3 Report generation: simple daily summary
+
+Build a tiny report from structured data and write it to a file.
+
+```protolex
+import io from "runtime/io"
+import string from "runtime/string"
+import ds from "corelib/ds/index.plx"
+
+items = ds.Array.new()
+ds.Array.push(items, [ name = "Emails", count = 12 ])
+ds.Array.push(items, [ name = "Builds", count = 3 ])
+ds.Array.push(items, [ name = "Tickets", count = 5 ])
+
+line = fn(item) {
+    string.format("- %s: %d\n", item.name, item.count)
+}
+
+body = ds.Array.fold(fn(acc, item) {
+    string.concat(acc, line(item))
+}, "", items)
+
+report = string.concat("Daily report\n", body)
+
+f = io.open("daily_report.txt", "w")
+try {
+    io.write(f, report)
+} finally {
+    io.close(f)
+}
 ```

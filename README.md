@@ -9,6 +9,7 @@ mutation, control flow, and dependencies. This repository contains:
 
 - the language specification [`specification.md`](specification.md)
 - the design rationale [`design.md`](design.md)
+- the user manual [`MANUAL.md`](MANUAL.md)
 - the core library specification [`corelib.md`](corelib.md) and implementation [`corelib/`](corelib/)
 - the runtime libraries [`runtime/`](runtime/), including [`io`](runtime/io), [`time`](runtime/time.md), [`sys`](runtime/sys.md), [`log`](runtime/log.md), [`string`](runtime/string.md), [`int`](runtime/int.md), [`float`](runtime/float.md), [`math`](runtime/math.md)
 - a reference interpreter in C [`src/`](src/)
@@ -29,6 +30,10 @@ Run an example:
 ./protolex ../examples/02_array_and_sort.plx
 ```
 
+Next:
+
+- read the manual [`MANUAL.md`](MANUAL.md)
+
 ## Corelib entry points
 
 ```plx
@@ -40,6 +45,7 @@ import algo from "corelib/algo/index.plx"
 
 - [`specification.md`](specification.md) : language spec
 - [`design.md`](design.md) : design principles and rationale
+- [`MANUAL.md`](MANUAL.md) : user manual
 - [`corelib.md`](corelib.md) : corelib spec
 - [`corelib/ds/`](corelib/ds/) : data structures
 - [`corelib/algo/`](corelib/algo/) : algorithms
