@@ -32,9 +32,9 @@ import algo from "corelib/algo/index.plx"
 
 ## Repository layout
 
-- `specification.md` : language spec
-- `corelib.md` : corelib spec
-- `corelib/ds/` : data structures
-- `corelib/algo/` : algorithms
-- `examples/` : sample programs
-- `src/` : C interpreter
+- [`specification.md`](specification.md) : language spec
+- [`corelib.md`](corelib.md) : corelib spec
+- [`corelib/ds/`](corelib/ds/) : data structures
+- [`corelib/algo/`](corelib/algo/) : algorithms
+- [`examples/`](examples/) : sample programs
+- [`src/`](src/) : C interpreter
