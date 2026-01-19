@@ -2,6 +2,8 @@
 
 # Protolex
 
+***Because explicitness defines existence.***
+
 Protolex is a minimalist, prototype-based language with explicit control over
 mutation, control flow, and dependencies. This repository contains:
 
