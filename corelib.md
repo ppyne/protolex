@@ -64,6 +64,20 @@ La corelib est organisée en **espaces d’objets** :
 
 `ds    // data structures algo  // algorithms`
 
+### 1.4. Organisation des fichiers
+
+La corelib est découpée par sujet dans des dossiers dédiés :
+
+`corelib/ds/*.plx`
+
+`corelib/algo/*.plx`
+
+Les points d’entrée sont :
+
+`import ds   from "corelib/ds/index.plx"`
+
+`import algo from "corelib/algo/index.plx"`
+
 ---
 
 ## 2. Structures de données fondamentales (`ds`)
