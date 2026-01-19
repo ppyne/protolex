@@ -37,5 +37,21 @@ bool runtime_import(const char *path, Env *env, Value *out) {
         *out = make_table(runtime_log_build());
         return true;
     }
+    if (strcmp(path, "runtime/string") == 0 || strcmp(path, "runtime/string.plx") == 0) {
+        *out = make_table(runtime_string_build());
+        return true;
+    }
+    if (strcmp(path, "runtime/int") == 0 || strcmp(path, "runtime/int.plx") == 0) {
+        *out = make_table(runtime_int_build());
+        return true;
+    }
+    if (strcmp(path, "runtime/float") == 0 || strcmp(path, "runtime/float.plx") == 0) {
+        *out = make_table(runtime_float_build());
+        return true;
+    }
+    if (strcmp(path, "runtime/math") == 0 || strcmp(path, "runtime/math.plx") == 0) {
+        *out = make_table(runtime_math_build());
+        return true;
+    }
     return false;
 }

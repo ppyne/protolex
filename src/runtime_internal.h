@@ -11,6 +11,10 @@ typedef struct {
     Table *time;
     Table *sys;
     Table *log;
+    Table *string;
+    Table *intlib;
+    Table *floatlib;
+    Table *mathlib;
     Table *sys_args;
     Table *sys_env;
 } RuntimeContext;

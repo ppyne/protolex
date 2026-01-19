@@ -16,3 +16,10 @@ t = [
 ]
 
 assert(t.x == 1, "table lookup")
+
+assert(isInt(1) == true, "isInt")
+assert(isFloat(1.5) == true, "isFloat")
+assert(isString("x") == true, "isString")
+assert(isBool(true) == true, "isBool")
+assert(isTable(t) == true, "isTable")
+assert(isFunction(fn(x) { x }) == true, "isFunction")

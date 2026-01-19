@@ -2022,6 +2022,60 @@ static Value native_is_absent(int argc, Value *argv, EvalResult *err) {
     return make_bool(argv[0].type == VAL_UNDEFINED);
 }
 
+static Value native_is_int(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isInt expects (value)", 22);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_INT);
+}
+
+static Value native_is_float(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isFloat expects (value)", 24);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_FLOAT);
+}
+
+static Value native_is_string(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isString expects (value)", 25);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_STRING);
+}
+
+static Value native_is_bool(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isBool expects (value)", 23);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_BOOL);
+}
+
+static Value native_is_table(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isTable expects (value)", 24);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_TABLE);
+}
+
+static Value native_is_function(int argc, Value *argv, EvalResult *err) {
+    if (argc != 1) {
+        err->is_exception = true;
+        err->value = make_string_value("isFunction expects (value)", 27);
+        return make_null();
+    }
+    return make_bool(argv[0].type == VAL_FUNCTION);
+}
+
 static Env *make_root_env(void) {
     Env *env = env_new(NULL);
     Function *clone_fn = xmalloc(sizeof(Function));
@@ -2043,6 +2097,36 @@ static Env *make_root_env(void) {
     is_absent_fn->is_native = true;
     is_absent_fn->native = native_is_absent;
     env_define(env, "isAbsent", make_function(is_absent_fn));
+
+    Function *is_int_fn = xmalloc(sizeof(Function));
+    is_int_fn->is_native = true;
+    is_int_fn->native = native_is_int;
+    env_define(env, "isInt", make_function(is_int_fn));
+
+    Function *is_float_fn = xmalloc(sizeof(Function));
+    is_float_fn->is_native = true;
+    is_float_fn->native = native_is_float;
+    env_define(env, "isFloat", make_function(is_float_fn));
+
+    Function *is_string_fn = xmalloc(sizeof(Function));
+    is_string_fn->is_native = true;
+    is_string_fn->native = native_is_string;
+    env_define(env, "isString", make_function(is_string_fn));
+
+    Function *is_bool_fn = xmalloc(sizeof(Function));
+    is_bool_fn->is_native = true;
+    is_bool_fn->native = native_is_bool;
+    env_define(env, "isBool", make_function(is_bool_fn));
+
+    Function *is_table_fn = xmalloc(sizeof(Function));
+    is_table_fn->is_native = true;
+    is_table_fn->native = native_is_table;
+    env_define(env, "isTable", make_function(is_table_fn));
+
+    Function *is_function_fn = xmalloc(sizeof(Function));
+    is_function_fn->is_native = true;
+    is_function_fn->native = native_is_function;
+    env_define(env, "isFunction", make_function(is_function_fn));
 
     return env;
 }

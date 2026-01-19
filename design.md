@@ -174,6 +174,16 @@ Map.put(m, k, v)
 
 ---
 
+## 9.1. Explicit type predicates
+
+Protolex provides explicit predicates for primitive and structural types:
+
+`isInt(x) isFloat(x) isString(x) isBool(x) isTable(x) isFunction(x)`
+
+They are pure, have no side effects, and never coerce values.
+
+---
+
 ## 10. Unordered tables
 
 Protolex tables are **fundamentally unordered**.

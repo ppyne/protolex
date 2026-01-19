@@ -1,4 +1,6 @@
-# protolex — Specification 0.1 (consolidated version)
+![Protolex](header.png)
+
+# Protolex — Specification 0.1 (consolidated version)
 
 ## 0. Language goal
 
@@ -31,9 +33,29 @@ Primitive types in 0.1:
 
 There is no conceptual distinction between expression and statement.
 
+### 1.2. Type predicates
+
+The language provides explicit type predicates:
+
+`isInt(x) isFloat(x) isString(x) isBool(x) isTable(x) isFunction(x)`
+
+Each predicate returns a boolean and never performs coercion.
+
 ---
 
-### 1.2. Tables
+### 1.3. Numeric primitives
+
+- `int` and `float` remain primitive types
+
+- the language provides basic arithmetic operators
+
+- NaN and Infinity are explicitly allowed for `float`
+
+- any advanced numerical operation is provided by runtime libraries
+
+---
+
+### 1.4. Tables
 
 A table is the **only composite type** in the language.
 
@@ -467,4 +489,3 @@ This specification defines **protolex 0.1**.
 It is conceptually closed and sufficient for a complete implementation.
 
 ---
-

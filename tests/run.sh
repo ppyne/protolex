@@ -21,3 +21,7 @@ run_test "lib_io" "$ROOT/tests/lib_io.plx"
 run_test "lib_time" "$ROOT/tests/lib_time.plx"
 run_test "lib_sys" "$ROOT/tests/lib_sys.plx" extra
 run_test "lib_log" "$ROOT/tests/lib_log.plx"
+run_test "lib_string" "$ROOT/tests/lib_string.plx"
+run_test "lib_int" "$ROOT/tests/lib_int.plx"
+run_test "lib_float" "$ROOT/tests/lib_float.plx"
+run_test "lib_math" "$ROOT/tests/lib_math.plx"

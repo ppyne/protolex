@@ -1,4 +1,6 @@
-# protolex-corelib — Specification 0.1
+![Protolex](header.png)
+
+# Protolex Corelib — Specification 0.1
 
 ## 0. Goal
 
@@ -70,6 +72,11 @@ This guarantees:
 The corelib is organized into **object namespaces**:
 
 `ds    // data structures algo  // algorithms`
+
+### 1.5. Primitive helpers
+
+`int`, `float`, and `math` are runtime libraries, not corelib modules. They are
+documented under `runtime/` and do not alter the language.
 
 ### 1.4. File organization
 

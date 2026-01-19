@@ -7,5 +7,9 @@ Table *runtime_io_build(void);
 Table *runtime_time_build(void);
 Table *runtime_sys_build(void);
 Table *runtime_log_build(void);
+Table *runtime_string_build(void);
+Table *runtime_int_build(void);
+Table *runtime_float_build(void);
+Table *runtime_math_build(void);
 
 #endif
