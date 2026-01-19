@@ -1,4 +1,6 @@
-# Protolex for C, Python, PHP, and JavaScript Developers
+![Protolex](header.png)
+
+# Protolex for C, C++, Python, PHP, and JavaScript Developers
 
 This guide shows what changes when you move to Protolex.
 It focuses on concrete differences and working patterns.
