@@ -1,7 +1,7 @@
 # Exemple 06 — Graphe et parcours BFS
 
-import ds   from "corelib/ds.plx"
-import algo from "corelib/algo.plx"
+import ds   from "corelib/ds/index.plx"
+import algo from "corelib/algo/index.plx"
 
 g = ds.Graph.new()
 

@@ -1,6 +1,6 @@
 # Exemple 04 — Stack et Queue
 
-import ds from "corelib/ds.plx"
+import ds from "corelib/ds/index.plx"
 
 stack = ds.Stack.new()
 ds.Stack.push(stack, 10)

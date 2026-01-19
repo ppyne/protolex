@@ -1,6 +1,6 @@
 # Exemple 01 — Listes immuables
 
-import ds from "corelib/ds.plx"
+import ds from "corelib/ds/index.plx"
 
 list =
     ds.List.cons(1,

@@ -1,6 +1,6 @@
 # Exemple 03 — Map et Set
 
-import ds from "corelib/ds.plx"
+import ds from "corelib/ds/index.plx"
 
 m = ds.Map.new()
 

@@ -1,7 +1,7 @@
 # Exemple 02 — Array + tri explicite
 
-import ds   from "corelib/ds.plx"
-import algo from "corelib/algo.plx"
+import ds   from "corelib/ds/index.plx"
+import algo from "corelib/algo/index.plx"
 
 a = ds.Array.new()
 

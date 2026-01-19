@@ -1,6 +1,6 @@
 # Exemple 05 — Arbre et recherche
 
-import ds from "corelib/ds.plx"
+import ds from "corelib/ds/index.plx"
 
 compare = fn(a, b) { a < b }
 
