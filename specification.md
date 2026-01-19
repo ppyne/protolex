@@ -107,16 +107,22 @@ An object without a `proto` key implicitly has `proto = null`.
 
 ### 3.3. Absence
 
-- if the key is not found anywhere -> `undefined`
+If a key is not found on an object or anywhere in its prototype chain, the lookup results in an absence.
 
-- `undefined` is **not** an assignable value
+The language provides a standard predicate:
 
-- the language provides a standard predicate `isAbsent(expr)` to test whether
-  evaluating `expr` resulted in a missing slot (lookup failed)
+```protolex
+    isAbsent(expr)
+```
 
-- absence is not a value and cannot be stored or compared
+`isAbsent(expr)` returns true if evaluating `expr` resulted in a missing slot,
+i.e. if a lookup failed on the target object and its entire prototype chain.
 
-- `null` is a valid value distinct from it
+Absence is not a value: it cannot be stored, compared, or passed around.
+
+If `expr` evaluates to a value (including `null`), `isAbsent(expr)` returns false.
+
+If evaluating `expr` throws an exception, it is propagated normally.
 
 ---
 
@@ -440,14 +446,7 @@ Protolex does not define:
 
 ---
 
-## 15. Status
-
-This specification defines **protolex 0.1**.
-It is conceptually closed and sufficient for a complete implementation.
-
----
-
-## 13. Operators (clarification)
+## 15. Operators (clarification)
 
 Protolex **provides no operator overloading or redefinition mechanism**,
 as in C++ or similar languages.
@@ -461,3 +460,11 @@ This choice is intentional and aims to avoid any syntactic magic,
 implicit dispatch, and semantic ambiguity.
 
 ---
+
+## 16. Status
+
+This specification defines **protolex 0.1**.
+It is conceptually closed and sufficient for a complete implementation.
+
+---
+
