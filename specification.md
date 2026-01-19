@@ -439,3 +439,21 @@ Protolex ne définit pas :
 
 Cette spécification définit **protolex 0.1**.  
 Elle est conceptuellement close et suffisante pour une implémentation complète.
+
+
+---
+
+## 13. Opérateurs (clarification)
+
+Protolex **ne fournit aucun mécanisme de surcharge ou de redéfinition des opérateurs**,
+à la manière de C++ ou de langages similaires.
+
+- Les opérateurs syntaxiques existants sont réservés aux types primitifs.
+- Ils ne sont pas extensibles par l’utilisateur ni par les bibliothèques.
+- Toute opération définie par l’utilisateur est exprimée **explicitement**
+  sous forme d’appel de fonction.
+
+Ce choix est intentionnel et vise à éviter toute magie syntaxique,
+tout dispatch implicite et toute ambiguïté sémantique.
+
+---

@@ -304,3 +304,47 @@ Ces aspects relèvent du runtime ou de bibliothèques séparées.
 
 Ce document définit **protolex-corelib 0.1**.  
 Il est compatible strictement avec **protolex 0.1** et peut évoluer indépendamment.
+
+---
+
+## Construction simplifiée des collections
+
+Afin de faciliter la construction de structures de données sans introduire
+de nouvelle syntaxe ou de littéraux dédiés, la corelib fournit des fonctions
+de construction explicites.
+
+### List.of
+
+```protolex
+ds.List.of(v1, v2, v3, ...)
+```
+
+Construit une liste immuable contenant les valeurs dans l’ordre donné.
+
+### Map.of
+
+```protolex
+ds.Map.of(
+  k1, v1, 
+  k2, v2, 
+  ...
+)
+```
+
+Construit une map à partir d’une suite clé / valeur.
+Le nombre d’arguments doit être pair, sinon une exception est levée.
+
+Ces fonctions remplacent toute tentative de littéraux de listes ou de maps,
+qui sont volontairement absents du langage.
+
+---
+
+## Absence d’opérateurs surchargeables
+
+La corelib ne redéfinit et ne surcharge **aucun opérateur syntaxique** du langage.
+
+Toutes les opérations (arithmétiques, algorithmiques, structurelles)
+sont exposées sous forme de fonctions nommées explicites
+(`Sort.quick`, `List.map`, `Map.put`, etc.).
+
+---

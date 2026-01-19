@@ -32,8 +32,8 @@ import algo from "corelib/algo/index.plx"
 
 ## Repository layout
 
-- [`specification.md`](specification.md) : language spec (in french)
-- [`corelib.md`](corelib.md) : corelib spec (in french)
+- [`specification.md`](specification.md) : language spec
+- [`corelib.md`](corelib.md) : corelib spec
 - [`corelib/ds/`](corelib/ds/) : data structures
 - [`corelib/algo/`](corelib/algo/) : algorithms
 - [`examples/`](examples/) : sample programs
