@@ -1,309 +1,309 @@
-# protolex — Spécification 0.1 (version consolidée)
+# protolex — Specification 0.1 (consolidated version)
 
-## 0. Objectif du langage
+## 0. Language goal
 
-Protolex est un langage prototype-based minimaliste, sans global implicite ni magie sémantique.  
-Il privilégie des **invariants forts**, un **comportement déterministe**, et une **explicitation systématique** des effets (mutation, contrôle de flot, dépendances).
+Protolex is a minimalist prototype-based language, with no implicit globals and no semantic magic.
+It favors **strong invariants**, **deterministic behavior**, and **systematic explicitness** of effects (mutation, control flow, dependencies).
 
 ---
 
-## 1. Ontologie générale
+## 1. General ontology
 
-### 1.1. Tout est valeur
+### 1.1. Everything is a value
 
-Protolex définit uniquement des valeurs.
+Protolex defines only values.
 
-Types primitifs en 0.1 :
+Primitive types in 0.1:
 
-- `int` (entier signé 64 bits)
+- `int` (signed 64-bit integer)
 
-- `float` (double précision)
+- `float` (double precision)
 
 - `bool`
 
 - `null`
 
-- `string` (immuable)
+- `string` (immutable)
 
 - `function`
 
 - `table`
 
-Il n’existe aucune distinction conceptuelle entre expression et instruction.
+There is no conceptual distinction between expression and statement.
 
 ---
 
 ### 1.2. Tables
 
-La table est le **seul type composite** du langage.
+A table is the **only composite type** in the language.
 
-Caractéristiques :
+Characteristics:
 
-- associative uniquement
+- associative only
 
-- clés : `string` ou `symbol`
+- keys: `string` or `symbol`
 
-- valeurs : toute valeur protolex
+- values: any protolex value
 
-- **non ordonnée**
+- **unordered**
 
-- aucune garantie d’ordre d’itération
+- no iteration order guarantee
 
-- aucune sémantique de liste ou de séquence
+- no list or sequence semantics
 
 ---
 
-## 2. Objets et prototypes
+## 2. Objects and prototypes
 
-### 2.1. Objet
+### 2.1. Object
 
-Un objet est une table.
+An object is a table.
 
 ### 2.2. Prototype
 
-- la clé réservée `proto` désigne le prototype
+- the reserved key `proto` designates the prototype
 
-- `proto` peut valoir :
-  
-  - un objet
-  
+- `proto` may be:
+
+  - an object
+
   - `null`
 
-- toute autre valeur affectée à `proto` est une erreur fatale
+- any other value assigned to `proto` is a fatal error
 
-Un objet sans clé `proto` a implicitement `proto = null`.
+An object without a `proto` key implicitly has `proto = null`.
 
 ---
 
-### 2.3. Chaîne de prototypes
+### 2.3. Prototype chain
 
-- la chaîne est linéaire
+- the chain is linear
 
-- les cycles sont **strictement interdits**
+- cycles are **strictly forbidden**
 
-- toute tentative de création de cycle provoque une erreur fatale non interceptable
+- any attempt to create a cycle causes a fatal, non-interceptable error
 
 ---
 
 ## 3. Lookup
 
-### 3.1. Syntaxe
+### 3.1. Syntax
 
 `obj.key`
 
-### 3.2. Sémantique
+### 3.2. Semantics
 
-- recherche dans `obj`
+- search in `obj`
 
-- sinon dans `obj.proto`
+- otherwise in `obj.proto`
 
-- récursivement jusqu’à `proto = null`
+- recursively until `proto = null`
 
-- la première occurrence trouvée est retournée
+- the first occurrence found is returned
 
-- aucun effet de bord
+- no side effects
 
-- aucune information sur l’origine du slot n’est exposée
+- no information about the origin of the slot is exposed
 
 ### 3.3. Absence
 
-- si la clé n’est trouvée nulle part → `undefined`
+- if the key is not found anywhere -> `undefined`
 
-- `undefined` n’est **pas** une valeur assignable
+- `undefined` is **not** an assignable value
 
-- `null` est une valeur valide distincte
+- `null` is a valid value distinct from it
 
 ---
 
-## 4. Existence locale
+## 4. Local existence
 
-### 4.1. Fonction `has`
+### 4.1. Function `has`
 
 `has(obj, key)`
 
-- retourne `true` si `key` est un slot **local** de `obj`
+- returns `true` if `key` is a **local** slot of `obj`
 
-- ne parcourt jamais la chaîne de prototypes
+- never traverses the prototype chain
 
-Il n’existe aucun mécanisme pour déterminer de quel prototype provient un slot hérité.
-
----
-
-## 5. Fonctions
-
-### 5.1. Fonctions comme valeurs
-
-- une fonction est une valeur ordinaire
-
-- aucune fonction n’est liée à un objet
-
-- il n’existe aucune notion de méthode au niveau du langage
-
-- aucune variable implicite (`this`, `self`) n’est définie
-
-L’usage d’un paramètre nommé `self` est une **convention**, pas un mot-clé.
+There is no mechanism to determine from which prototype an inherited slot comes.
 
 ---
 
-### 5.2. Appel
+## 5. Functions
+
+### 5.1. Functions as values
+
+- a function is an ordinary value
+
+- no function is bound to an object
+
+- there is no notion of method at the language level
+
+- no implicit variable (`this`, `self`) is defined
+
+Using a parameter named `self` is a **convention**, not a keyword.
+
+---
+
+### 5.2. Call
 
 `f(x)`
 
-Aucune sémantique implicite n’est attachée à l’appel.
+No implicit semantics are attached to calls.
 
-### 5.3. Convention d’appel « méthode »
+### 5.3. "Method" call convention
 
 `obj.f(obj)`
 
-Cette forme est strictement équivalente à :
+This form is strictly equivalent to:
 
 `(f = obj.f; f(obj))`
 
 ---
 
-## 6. Mutation et gel
+## 6. Mutation and freeze
 
-### 6.1. Gel par défaut
+### 6.1. Freeze by default
 
-Tout objet est **gelé par défaut**.
+Every object is **frozen by default**.
 
-Sont interdits sur un objet gelé :
+Forbidden on a frozen object:
 
-- ajout de slot
+- adding a slot
 
-- modification de slot
+- modifying a slot
 
-- suppression de slot
+- deleting a slot
 
-Toute tentative provoque une exception.
+Any attempt raises an exception.
 
 ---
 
-### 6.2. Bloc `mutate`
+### 6.2. `mutate` block
 
 `mutate obj {     ... }`
 
-- autorise temporairement la mutation de `obj`
+- temporarily allows mutation of `obj`
 
-- le dégel est **lexical**
+- thawing is **lexical**
 
-- le gel est automatiquement restauré à la sortie du bloc
+- freeze is automatically restored at block exit
 
-- aucune mutation permanente n’est possible
-
----
-
-### 6.3. Masquage et prototypes
-
-- muter un objet ne mute jamais son prototype
-
-- il est autorisé de masquer un slot hérité par un slot local
-
-- le gel s’applique uniquement à l’objet ciblé
+- no permanent mutation is possible
 
 ---
 
-### 6.4. Suppression de slot
+### 6.3. Masking and prototypes
 
-La suppression d’un slot s’effectue par :
+- mutating an object never mutates its prototype
+
+- it is allowed to mask an inherited slot with a local slot
+
+- freeze applies only to the targeted object
+
+---
+
+### 6.4. Slot deletion
+
+Slot deletion is done via:
 
 `undefine obj.key`
 
-- `undefine` rend le slot absent
+- `undefine` makes the slot absent
 
-- le lookup retombera sur le prototype si présent
+- lookup will fall back to the prototype if present
 
-- `undefine` est une mutation : autorisé uniquement dans `mutate`
+- `undefine` is a mutation: allowed only in `mutate`
 
 ---
 
-## 7. Clonage
+## 7. Cloning
 
-### 7.1. Fonction `clone`
+### 7.1. Function `clone`
 
 `new = clone(proto)`
 
-- crée une table vide
+- creates an empty table
 
-- définit `new.proto = proto`
+- sets `new.proto = proto`
 
-- ne copie aucun slot
+- copies no slots
 
-- clonage toujours autorisé
+- cloning is always allowed
 
-Il n’existe aucun autre mécanisme de construction.
-
----
-
-## 8. Environnement d’exécution
-
-### 8.1. Absence de global
-
-Protolex ne définit **aucun objet global**.
-
-Toute valeur utilisée par un programme doit provenir :
-
-- d’une liaison lexicale
-
-- d’un argument
-
-- d’un import
-
-- de l’environnement initial fourni par le runtime
+There is no other construction mechanism.
 
 ---
 
-### 8.2. Objets racines
+## 8. Runtime environment
 
-- le runtime fournit un ensemble d’objets racines
+### 8.1. No global
 
-- ces objets sont liés lexicalement
+Protolex defines **no global object**.
 
-- l’environnement initial est figé
+Any value used by a program must come from:
 
-- aucun rebinding n’est autorisé
+- a lexical binding
+
+- an argument
+
+- an import
+
+- the initial environment provided by the runtime
+
+---
+
+### 8.2. Root objects
+
+- the runtime provides a set of root objects
+
+- these objects are bound lexically
+
+- the initial environment is frozen
+
+- no rebinding is allowed
 
 ---
 
 ## 9. Import
 
-### 9.1. Principe
+### 9.1. Principle
 
 `mod = import "module.plx" using env`
 
-- le module est exécuté dans un environnement isolé
+- the module is executed in an isolated environment
 
-- l’environnement est explicitement fourni
+- the environment is explicitly provided
 
-- le module retourne un objet
+- the module returns an object
 
-- aucun état global n’est partagé implicitement
+- no global state is implicitly shared
 
 ---
 
-### 9.2. Exceptions et import
+### 9.2. Exceptions and import
 
-- les exceptions traversent les frontières de module sans transformation
+- exceptions cross module boundaries unchanged
 
-- `import` n’intercepte aucune exception
+- `import` does not intercept any exception
 
-- toute isolation doit être explicite (`try / catch`)
+- isolation must be explicit (`try / catch`)
 
 ---
 
 ## 10. Exceptions
 
-### 10.1. Principe
+### 10.1. Principle
 
-- `throw` peut lever **n’importe quelle valeur**
+- `throw` may raise **any value**
 
-- le langage ne distingue pas erreur / signal / événement
+- the language does not distinguish error / signal / event
 
-- les exceptions sont un mécanisme général de rupture de flot
+- exceptions are a general mechanism for control-flow break
 
 ---
 
-### 10.2. Syntaxe
+### 10.2. Syntax
 
 `throw value`
 
@@ -313,147 +313,146 @@ Toute valeur utilisée par un programme doit provenir :
 
 ### 10.3. `catch *`
 
-- intercepte toute valeur levée par `throw`
+- intercepts any value raised by `throw`
 
-- ne donne pas accès à la valeur
+- does not provide access to the value
 
-- destiné à la protection et à l’isolation
+- intended for protection and isolation
 
 ---
 
 ### 10.4. `finally`
 
-- exécuté dans tous les cas
+- executed in all cases
 
-- **ne peut ni `throw` ni `return`**
+- **cannot `throw` or `return`**
 
-- toute tentative provoque une erreur fatale
+- any attempt causes a fatal error
 
-- une exception en cours traverse `finally` intacte
-
----
-
-### 10.5. Erreurs fatales
-
-Certaines violations des invariants du langage sont **fatales et non interceptables**, notamment :
-
-- cycles de prototypes
-
-- corruption du modèle de mutation
-
-- incohérence de l’environnement d’exécution
-
-- erreurs internes du runtime
+- an in-flight exception crosses `finally` intact
 
 ---
 
-## 11. Réflexion
+### 10.5. Fatal errors
 
-Protolex interdit toute réflexion complète sur le graphe d’objets.
+Some violations of language invariants are **fatal and non-interceptable**, including:
 
-Il n’existe aucun mécanisme pour :
+- prototype cycles
 
-- parcourir la chaîne de prototypes
+- corruption of the mutation model
 
-- inspecter l’origine d’un slot
+- runtime environment inconsistency
 
-- modifier la stratégie de lookup
-
-- introspecter globalement l’état du programme
+- internal runtime errors
 
 ---
 
-## 12. Structures de données
+## 11. Reflection
 
-Protolex ne définit **aucune structure de données complexe intégrée**.
+Protolex forbids full reflection over the object graph.
 
-- les tables sont non ordonnées
+There is no mechanism to:
 
-- aucune structure de liste n’est intégrée au langage
+- traverse the prototype chain
 
-- les structures séquentielles et algorithmiques sont fournies par bibliothèques
+- inspect the origin of a slot
 
-Les bibliothèques peuvent proposer :
+- modify the lookup strategy
 
-- listes
+- introspect global program state
 
-- tableaux dynamiques
+---
+
+## 12. Data structures
+
+Protolex defines **no built-in complex data structures**.
+
+- tables are unordered
+
+- no list structure is built into the language
+
+- sequential and algorithmic structures are provided by libraries
+
+Libraries may provide:
+
+- lists
+
+- dynamic arrays
 
 - maps
 
 - sets
 
-- arbres
+- trees
 
-- graphes
+- graphs
 
-- algorithmes de tri et de recherche
+- sorting and search algorithms
 
-Ces structures sont implémentées comme objets ordinaires, avec mutation interne contrôlée.
+These structures are implemented as ordinary objects with controlled internal mutation.
 
 ---
 
-## 13. Mécanismes explicitement absents
+## 13. Explicitly absent mechanisms
 
-Protolex ne définit pas :
+Protolex does not define:
 
 - classes
 
-- héritage multiple
+- multiple inheritance
 
-- constructeurs
+- constructors
 
-- destructeurs
+- destructors
 
-- initialisation implicite
+- implicit initialization
 
-- nettoyage implicite
+- implicit cleanup
 
-- variables implicites (`this`, `self`)
+- implicit variables (`this`, `self`)
 
 - macros
 
-- métaclasses
+- metaclasses
 
-- monkey-patching silencieux
-
----
-
-## 14. Principes directeurs
-
-- pas de global
-
-- pas de magie
-
-- pas de fallback implicite
-
-- invariants forts
-
-- sécurité par défaut
-
-- tout est explicite ou n’existe pas
+- silent monkey-patching
 
 ---
 
-## 15. Statut
+## 14. Guiding principles
 
-Cette spécification définit **protolex 0.1**.  
-Elle est conceptuellement close et suffisante pour une implémentation complète.
+- no global
 
+- no magic
+
+- no implicit fallback
+
+- strong invariants
+
+- secure by default
+
+- everything is explicit or does not exist
 
 ---
 
-## 13. Opérateurs (clarification)
+## 15. Status
 
-Protolex **ne fournit aucun mécanisme de surcharge ou de redéfinition des opérateurs**,
-à la manière de C++ ou de langages similaires.
+This specification defines **protolex 0.1**.
+It is conceptually closed and sufficient for a complete implementation.
 
-- Les opérateurs syntaxiques existants sont réservés aux types primitifs.
-- Ils ne sont pas extensibles par l’utilisateur ni par les bibliothèques.
-- Toute opération définie par l’utilisateur est exprimée **explicitement**
-  sous forme d’appel de fonction.
+---
 
-Ce choix est intentionnel et vise à éviter toute magie syntaxique,
-tout dispatch implicite et toute ambiguïté sémantique.
+## 13. Operators (clarification)
+
+Protolex **provides no operator overloading or redefinition mechanism**,
+as in C++ or similar languages.
+
+- Existing syntactic operators are reserved for primitive types.
+- They are not extensible by users or libraries.
+- Any user-defined operation is expressed **explicitly**
+  as a function call.
+
+This choice is intentional and aims to avoid any syntactic magic,
+implicit dispatch, and semantic ambiguity.
 
 ---

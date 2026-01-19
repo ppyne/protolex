@@ -3,10 +3,11 @@
 Protolex is a minimalist, prototype-based language with explicit control over
 mutation, control flow, and dependencies. This repository contains:
 
-- the language specification ([`specification.md`](specification.md))
-- the core library specification ([`corelib.md`](corelib.md)) and implementation ([`corelib/`](corelib/))
-- a reference interpreter in C ([`src/`](src/))
-- example programs ([`examples/`](examples/))
+- the language specification (`specification.md`)
+- the design rationale (`design.md`)
+- the core library specification (`corelib.md`) and implementation (`corelib/`)
+- a reference interpreter in C (`src/`)
+- example programs (`examples/`)
 
 ## Quick start
 
@@ -32,9 +33,10 @@ import algo from "corelib/algo/index.plx"
 
 ## Repository layout
 
-- [`specification.md`](specification.md) : language spec
-- [`corelib.md`](corelib.md) : corelib spec
-- [`corelib/ds/`](corelib/ds/) : data structures
-- [`corelib/algo/`](corelib/algo/) : algorithms
-- [`examples/`](examples/) : sample programs
-- [`src/`](src/) : C interpreter
+- `specification.md` : language spec
+- `design.md` : design principles and rationale
+- `corelib.md` : corelib spec
+- `corelib/ds/` : data structures
+- `corelib/algo/` : algorithms
+- `examples/` : sample programs
+- `src/` : C interpreter

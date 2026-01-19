@@ -1,78 +1,78 @@
-# protolex-corelib — Spécification 0.1
+# protolex-corelib — Specification 0.1
 
-## 0. Objectif
+## 0. Goal
 
-`protolex-corelib` définit un **ensemble minimal mais extensible** de structures de données et d’algorithmes fournis par le runtime protolex.
+`protolex-corelib` defines a **minimal but extensible** set of data structures and algorithms provided by the protolex runtime.
 
-La corelib :
+The corelib:
 
-- **n’ajoute aucune règle au langage**
+- **adds no rule to the language**
 
-- n’introduit **aucun mot-clé**
+- introduces **no keyword**
 
-- respecte strictement :
-  
-  - le gel par défaut
-  
-  - la mutation contrôlée
-  
-  - l’absence de global
-  
-  - l’absence de réflexion
+- strictly respects:
 
-Toutes les structures sont exposées comme **objets ordinaires gelés**.
+  - freeze by default
 
----
+  - controlled mutation
 
-## 1. Principes généraux
+  - the absence of globals
 
-### 1.1. Pas de structures intégrées au langage
+  - the absence of reflection
 
-Protolex **ne définit aucune structure de données intégrée** autre que la table.
-
-Toutes les structures ci-dessous sont :
-
-- fournies par le runtime
-
-- accessibles via import
-
-- implémentées comme objets + fonctions
+All structures are exposed as **ordinary frozen objects**.
 
 ---
 
-### 1.2. Gel et encapsulation
+## 1. General principles
 
-- les objets représentant les structures sont **gelés**
+### 1.1. No built-in structures in the language
 
-- l’utilisateur **ne peut jamais muter directement** leurs invariants
+Protolex defines **no built-in data structure** other than the table.
 
-- la mutation interne est autorisée **uniquement** à l’intérieur des fonctions de la corelib
+All structures below are:
 
-Cela garantit :
+- provided by the runtime
 
-- sécurité
+- accessible via import
 
-- cohérence
-
-- absence de corruption de structure
+- implemented as objects + functions
 
 ---
 
-### 1.3. Nommage et organisation
+### 1.2. Freeze and encapsulation
 
-La corelib est organisée en **espaces d’objets** :
+- objects representing structures are **frozen**
+
+- users **can never mutate directly** their invariants
+
+- internal mutation is allowed **only** inside corelib functions
+
+This guarantees:
+
+- safety
+
+- consistency
+
+- no structural corruption
+
+---
+
+### 1.3. Naming and organization
+
+The corelib is organized into **object namespaces**:
 
 `ds    // data structures algo  // algorithms`
 
-### 1.4. Organisation des fichiers
+### 1.4. File organization
 
-La corelib est découpée par sujet dans des dossiers dédiés :
+The corelib is split by topic into dedicated folders:
 
 `corelib/ds/*.plx`
 
 `corelib/algo/*.plx`
 
-Les points d’entrée sont :
+Entry points are:
 
 `import ds   from "corelib/ds/index.plx"`
 
@@ -80,55 +80,55 @@ Les points d’entrée sont :
 
 ---
 
-## 2. Structures de données fondamentales (`ds`)
+## 2. Fundamental data structures (`ds`)
 
 ---
 
-## 2.1. List — liste chaînée immuable
+## 2.1. List — immutable linked list
 
 ### 2.1.1. Nature
 
-- liste persistante
+- persistent list
 
-- immuable par défaut
+- immutable by default
 
-- structure récursive explicite
+- explicit recursive structure
 
-### 2.1.2. Interface minimale
+### 2.1.2. Minimal interface
 
 `ds.List.nil ds.List.cons(head, tail) ds.List.isNil(list) ds.List.head(list) ds.List.tail(list)`
 
-### 2.1.3. Fonctions utilitaires
+### 2.1.3. Utility functions
 
 `ds.List.length(list) ds.List.map(fn, list) ds.List.fold(fn, init, list) ds.List.reverse(list)`
 
-### 2.1.4. Propriétés
+### 2.1.4. Properties
 
-- aucune mutation
+- no mutation
 
-- partage structurel
+- structural sharing
 
-- coût mémoire maîtrisé
+- controlled memory cost
 
-- parfaitement compatible avec `clone`
+- fully compatible with `clone`
 
 ---
 
-## 2.2. Array — tableau dynamique encapsulé
+## 2.2. Array — encapsulated dynamic array
 
 ### 2.2.1. Nature
 
-- structure séquentielle indexée
+- indexed sequential structure
 
-- ordre garanti **par la structure**
+- order guaranteed **by the structure**
 
-- mutation interne contrôlée
+- controlled internal mutation
 
-### 2.2.2. Création
+### 2.2.2. Creation
 
 `a = ds.Array.new()`
 
-### 2.2.3. Accès
+### 2.2.3. Access
 
 `ds.Array.length(a) ds.Array.get(a, index) ds.Array.set(a, index, value)`
 
@@ -136,25 +136,25 @@ Les points d’entrée sont :
 
 `ds.Array.push(a, value) ds.Array.pop(a) ds.Array.insert(a, index, value) ds.Array.remove(a, index)`
 
-### 2.2.5. Garanties
+### 2.2.5. Guarantees
 
-- l’objet `a` reste gelé côté utilisateur
+- object `a` remains frozen from the user's perspective
 
-- toute mutation est interne à la corelib
+- all mutation is internal to the corelib
 
-- indices hors bornes → exception
+- out-of-bounds indices -> exception
 
 ---
 
-## 2.3. Map — dictionnaire clé → valeur
+## 2.3. Map — key -> value dictionary
 
 ### 2.3.1. Nature
 
-- association clé → valeur
+- key -> value association
 
-- implémentation libre (hash, arbre, etc.)
+- implementation free (hash, tree, etc.)
 
-- indépendance totale de la table protolex
+- totally independent from the protolex table
 
 ### 2.3.2. Interface
 
@@ -162,13 +162,13 @@ Les points d’entrée sont :
 
 ---
 
-## 2.4. Set — ensemble mathématique
+## 2.4. Set — mathematical set
 
 ### 2.4.1. Nature
 
-- ensemble sans doublons
+- set with no duplicates
 
-- basé conceptuellement sur Map
+- conceptually based on Map
 
 ### 2.4.2. Interface
 
@@ -178,7 +178,7 @@ Les points d’entrée sont :
 
 ## 2.5. Stack / Queue / Deque
 
-Structures séquentielles classiques, interfaces explicites :
+Classic sequential structures, explicit interfaces:
 
 ### Stack (LIFO)
 
@@ -190,13 +190,13 @@ Structures séquentielles classiques, interfaces explicites :
 
 ---
 
-## 2.6. Tree — arbres
+## 2.6. Tree — trees
 
-### 2.6.1. Arbre binaire (base)
+### 2.6.1. Binary tree (base)
 
 `t = ds.Tree.empty() ds.Tree.insert(t, value, compare) ds.Tree.contains(t, value, compare) ds.Tree.remove(t, value, compare)`
 
-### 2.6.2. Variantes possibles (optionnelles)
+### 2.6.2. Possible variants (optional)
 
 - AVL
 
@@ -204,114 +204,113 @@ Structures séquentielles classiques, interfaces explicites :
 
 - B-Tree
 
-Chaque variante est exposée comme **objet distinct**.
+Each variant is exposed as a **distinct object**.
 
 ---
 
-## 2.7. Graph — graphes
+## 2.7. Graph — graphs
 
 ### 2.7.1. Nature
 
-- graphe orienté ou non orienté
+- directed or undirected graph
 
-- représentation interne libre
+- internal representation is free
 
-### 2.7.2. Interface minimale
+### 2.7.2. Minimal interface
 
 `g = ds.Graph.new() ds.Graph.addNode(g, node) ds.Graph.addEdge(g, from, to) ds.Graph.neighbors(g, node)`
 
 ---
 
-## 3. Algorithmes (`algo`)
+## 3. Algorithms (`algo`)
 
-Les algorithmes sont **séparés des structures**.
+Algorithms are **separate from structures**.
 
 ---
 
-## 3.1. Tri (`algo.Sort`)
+## 3.1. Sorting (`algo.Sort`)
 
-Chaque algorithme est nommé explicitement.
+Each algorithm is explicitly named.
 
 `algo.Sort.quick(array, compare) algo.Sort.merge(array, compare) algo.Sort.heap(array, compare) algo.Sort.insertion(array, compare)`
 
-- aucun tri implicite
+- no implicit sort
 
-- `compare(a, b)` retourne bool ou ordre
+- `compare(a, b)` returns bool or order
 
 ---
 
-## 3.2. Recherche (`algo.Search`)
+## 3.2. Search (`algo.Search`)
 
 `algo.Search.linear(array, value) algo.Search.binary(array, value, compare) algo.Search.tree(tree, value, compare)`
 
 ---
 
-## 3.3. Parcours et graphes
+## 3.3. Traversal and graphs
 
 `algo.Search.bfs(graph, start) algo.Search.dfs(graph, start) algo.Search.dijkstra(graph, start) algo.Search.astar(graph, start, heuristic)`
 
 ---
 
-## 4. Erreurs et exceptions
+## 4. Errors and exceptions
 
-- toute violation d’invariant → `throw`
+- any invariant violation -> `throw`
 
-- aucune valeur spéciale retournée
+- no special return value
 
-- aucun fallback silencieux
+- no silent fallback
 
-- les exceptions traversent les appels normalement
+- exceptions cross calls normally
 
 ---
 
-## 5. Ce que corelib ne fait pas
+## 5. What corelib does not do
 
-La corelib **ne fournit pas** :
+The corelib **does not provide**:
 
-- concurrence
+- concurrency
 
-- parallélisme
+- parallelism
 
-- persistance
+- persistence
 
-- sérialisation
+- serialization
 
 - I/O
 
-- gestion mémoire
+- memory management
 
-- typage
+- typing
 
-Ces aspects relèvent du runtime ou de bibliothèques séparées.
-
----
-
-## 6. Extension et compatibilité
-
-- toute nouvelle structure doit :
-  
-  - être un objet ordinaire
-  
-  - respecter le gel
-  
-  - expliciter toute mutation
-
-- aucune extension ne doit modifier la spec du langage
+These aspects belong to the runtime or separate libraries.
 
 ---
 
-## 7. Statut
+## 6. Extension and compatibility
 
-Ce document définit **protolex-corelib 0.1**.  
-Il est compatible strictement avec **protolex 0.1** et peut évoluer indépendamment.
+- any new structure must:
+
+  - be an ordinary object
+
+  - respect freezing
+
+  - make all mutation explicit
+
+- no extension may modify the language spec
 
 ---
 
-## Construction simplifiée des collections
+## 7. Status
 
-Afin de faciliter la construction de structures de données sans introduire
-de nouvelle syntaxe ou de littéraux dédiés, la corelib fournit des fonctions
-de construction explicites.
+This document defines **protolex-corelib 0.1**.
+It is strictly compatible with **protolex 0.1** and can evolve independently.
+
+---
+
+## Simplified collection construction
+
+To ease the construction of data structures without introducing new syntax or dedicated literals,
+the corelib provides explicit constructor functions.
 
 ### List.of
 
@@ -319,32 +318,32 @@ de construction explicites.
 ds.List.of(v1, v2, v3, ...)
 ```
 
-Construit une liste immuable contenant les valeurs dans l’ordre donné.
+Builds an immutable list containing the values in the given order.
 
 ### Map.of
 
 ```protolex
 ds.Map.of(
-  k1, v1, 
-  k2, v2, 
+  k1, v1,
+  k2, v2,
   ...
 )
 ```
 
-Construit une map à partir d’une suite clé / valeur.
-Le nombre d’arguments doit être pair, sinon une exception est levée.
+Builds a map from a sequence of key/value pairs.
+The number of arguments must be even, otherwise an exception is raised.
 
-Ces fonctions remplacent toute tentative de littéraux de listes ou de maps,
-qui sont volontairement absents du langage.
+These functions replace any attempt at list or map literals,
+which are intentionally absent from the language.
 
 ---
 
-## Absence d’opérateurs surchargeables
+## Absence of overloadable operators
 
-La corelib ne redéfinit et ne surcharge **aucun opérateur syntaxique** du langage.
+The corelib does not redefine or overload **any syntactic operator** of the language.
 
-Toutes les opérations (arithmétiques, algorithmiques, structurelles)
-sont exposées sous forme de fonctions nommées explicites
+All operations (arithmetic, algorithmic, structural)
+are exposed as explicit named functions
 (`Sort.quick`, `List.map`, `Map.put`, etc.).
 
 ---

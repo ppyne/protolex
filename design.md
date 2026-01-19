@@ -1,99 +1,99 @@
 # protolex — DESIGN
 
-Ce document décrit les **principes de conception**, les **choix assumés** et les
-**mécanismes volontairement absents** de protolex.
+This document describes the **design principles**, **intentional choices**, and
+**mechanisms deliberately absent** from protolex.
 
-Il ne s’agit pas d’un tutoriel, mais d’un **document de justification** destiné à
-comprendre *pourquoi* protolex est conçu ainsi, et *pourquoi il ne ressemble pas*
-à d’autres langages existants.
+It is not a tutorial, but a **justification document** meant to explain *why*
+protolex is designed this way, and *why it does not look like* other existing
+languages.
 
 ---
 
-## 1. Objectif fondamental
+## 1. Fundamental goal
 
-Protolex vise à fournir un langage :
+Protolex aims to provide a language that is:
 
 - minimal
-- cohérent
-- explicite
-- sans magie
-- avec des invariants forts
+- coherent
+- explicit
+- without magic
+- with strong invariants
 
-L’objectif n’est **pas** de maximiser la concision syntaxique,
-mais de **rendre visibles les choix et les effets** dans le code.
-
----
-
-## 2. Principe central : tout est valeur
-
-Dans protolex :
-
-- fonctions, tables, nombres, booléens, `null` sont des valeurs
-- il n’existe aucune distinction entre expression et instruction
-- le langage n’introduit aucun concept “à part”
-
-Conséquence directe :
-- aucun mécanisme implicite de cycle de vie
-- aucune phase cachée (init, teardown, etc.)
+The goal is **not** to maximize syntactic concision,
+but to **make choices and effects visible** in code.
 
 ---
 
-## 3. Objets = tables, prototypes explicites
+## 2. Central principle: everything is a value
 
-Protolex est **prototype-based**, mais de manière stricte et minimale :
+In protolex:
 
-- un objet est une table
-- un prototype est une table référencée par la clé `proto`
-- le lookup est récursif et déterministe
-- les cycles de prototypes sont interdits
+- functions, tables, numbers, booleans, `null` are values
+- there is no distinction between expression and statement
+- the language introduces no "separate" concept
 
-Aucun autre mécanisme d’héritage n’existe.
+Direct consequences:
+- no implicit lifecycle mechanism
+- no hidden phase (init, teardown, etc.)
 
 ---
 
-## 4. Absence de classes (choix assumé)
+## 3. Objects = tables, explicit prototypes
 
-Les classes sont volontairement absentes.
+Protolex is **prototype-based**, but in a strict and minimal way:
 
-Raisons :
-- duplication de concepts (classe / instance)
-- cycles de vie implicites
-- confusion entre structure et comportement
-- besoin artificiel de constructeurs
+- an object is a table
+- a prototype is a table referenced by the `proto` key
+- lookup is recursive and deterministic
+- prototype cycles are forbidden
 
-Protolex préfère :
-- clonage explicite
+No other inheritance mechanism exists.
+
+---
+
+## 4. No classes (intentional choice)
+
+Classes are deliberately absent.
+
+Reasons:
+- duplicated concepts (class / instance)
+- implicit lifecycles
+- confusion between structure and behavior
+- artificial need for constructors
+
+Protolex prefers:
+- explicit cloning
 - composition
-- partage par prototype
+- prototype sharing
 
 ---
 
-## 5. Absence de global
+## 5. No globals
 
-Protolex ne définit **aucun objet global**.
+Protolex defines **no global object**.
 
-Tout accès doit provenir :
-- d’une liaison lexicale
-- d’un argument
-- d’un import explicite
-- d’un objet racine fourni par le runtime
+Every access must come from:
+- a lexical binding
+- an argument
+- an explicit import
+- a root object provided by the runtime
 
-Ce choix :
-- empêche les dépendances cachées
-- facilite l’isolement
-- rend les modules réellement testables
+This choice:
+- prevents hidden dependencies
+- makes isolation easier
+- makes modules truly testable
 
 ---
 
-## 6. Gel par défaut, mutation explicite
+## 6. Freeze by default, explicit mutation
 
-Tout objet est **gelé par défaut**.
+Every object is **frozen by default**.
 
-La mutation :
+Mutation is:
 
-- est toujours locale
-- toujours explicite
-- toujours encadrée par `mutate`
+- always local
+- always explicit
+- always enclosed by `mutate`
 
 ```protolex
 mutate obj {
@@ -101,70 +101,70 @@ mutate obj {
 }
 ```
 
-Ce modèle :
+This model:
 
-- empêche les mutations globales accidentelles
-- rend les effets visibles dans le code
-- évite le “monkey patching” silencieux
+- prevents accidental global mutation
+- makes effects visible in code
+- avoids silent monkey patching
 
 ---
 
-## 7. Suppression par absence (`undefine`)
+## 7. Deletion by absence (`undefine`)
 
-Protolex ne “supprime” pas une valeur :  
-il rend un slot **absent**.
+Protolex does not "delete" a value:
+it makes a slot **absent**.
 
 ```protolex
 undefine obj.key
 ```
 
-Conséquences :
+Consequences:
 
-- le lookup peut retomber sur le prototype
-- pas de valeur spéciale de type “deleted”
-- cohérence avec `undefined`
+- lookup can fall back to the prototype
+- no special "deleted" value
+- consistency with `undefined`
 
 ---
 
-## 8. Fonctions sans liaison implicite
+## 8. Functions without implicit binding
 
-Protolex ne définit :
+Protolex defines:
 
-- ni `this`
-- ni `self`
-- ni équivalent implicite
+- no `this`
+- no `self`
+- no implicit equivalent
 
-Une fonction est une valeur autonome.
+A function is an autonomous value.
 
-Le passage explicite de l’objet :
+Passing the object explicitly:
 
 ```protolex
 obj.f(obj)
 ```
 
-est considéré comme une **vertu**, pas une faiblesse :
+is considered a **virtue**, not a weakness:
 
-- pas d’ambiguïté
-- pas de capture cachée
-- pas de dépendance implicite au contexte
+- no ambiguity
+- no hidden capture
+- no implicit dependency on context
 
 ---
 
-## 9. Pas de surcharge d’opérateurs
+## 9. No operator overloading
 
-Protolex **refuse explicitement** tout mécanisme de type `operator` :
+Protolex **explicitly rejects** any `operator`-style mechanism:
 
-- pas de surcharge
-- pas de redéfinition
-- pas de dispatch implicite
+- no overloading
+- no redefinition
+- no implicit dispatch
 
-Raisons :
+Reasons:
 
-- éviter la magie syntaxique
-- éviter les ambiguïtés de résolution
-- préserver la lisibilité locale
+- avoid syntactic magic
+- avoid resolution ambiguity
+- preserve local readability
 
-Toutes les opérations sont des **fonctions explicites** :
+All operations are **explicit functions**:
 
 ```protolex
 List.map(f, list)
@@ -174,138 +174,137 @@ Map.put(m, k, v)
 
 ---
 
-## 10. Tables non ordonnées
+## 10. Unordered tables
 
-Les tables protolex sont **fondamentalement non ordonnées**.
+Protolex tables are **fundamentally unordered**.
 
-Elles ne doivent pas être utilisées comme :
+They must not be used as:
 
-- listes
-- tableaux
-- séquences
+- lists
+- arrays
+- sequences
 
-Ce choix :
+This choice:
 
-- évite les dépendances implicites à l’ordre
-- force l’usage de structures explicites
-- empêche les faux amis conceptuels
+- avoids implicit order dependencies
+- forces explicit structures
+- prevents conceptual false friends
 
 ---
 
-## 11. Pas de littéraux de collections
+## 11. No collection literals
 
-Protolex ne définit aucun littéral pour :
+Protolex defines no literal for:
 
-- listes
+- lists
 - maps
 - sets
 
-La construction de collections est réalisée par la corelib :
+Collection construction is performed by the corelib:
 
 ```protolex
 List.of(1, 2, 3)
 Map.of("a", 1, "b", 2)
 ```
 
-Cela permet :
+This allows:
 
-- une syntaxe explicite
-- aucune extension du parseur
-- une séparation claire langage / bibliothèque
-
----
-
-## 12. Corelib : ergonomie sans magie
-
-La corelib fournit :
-
-- structures de données classiques
-- algorithmes de tri et de recherche
-
-Mais :
-
-- aucune règle de langage
-- aucune mutation utilisateur directe
-- aucun opérateur spécial
-
-La mutation interne est **encapsulée** dans la bibliothèque.
+- explicit syntax
+- no parser extension
+- a clear language/library separation
 
 ---
 
-## 13. Exceptions comme mécanisme général
+## 12. Corelib: ergonomics without magic
 
-Protolex utilise les exceptions comme mécanisme **général de rupture de flot** :
+The corelib provides:
 
-- `throw` peut lever n’importe quelle valeur
-- `catch *` permet l’isolation
-- `finally` est strict et non perturbable
+- classic data structures
+- sorting and search algorithms
 
-Ce modèle permet :
+But:
 
-- la gestion d’erreurs
-- la gestion d’événements
-- la protection de frontières d’exécution
+- no language rule
+- no direct user mutation
+- no special operator
 
----
-
-## 14. Réflexion volontairement limitée
-
-Protolex interdit la réflexion complète sur le graphe d’objets.
-
-Impossible de :
-
-- inspecter la chaîne de prototypes
-- interroger l’origine d’un slot
-- modifier dynamiquement le lookup
-
-Ce choix :
-
-- protège les invariants
-- empêche les frameworks intrusifs
-- maintient la lisibilité
+Internal mutation is **encapsulated** in the library.
 
 ---
 
-## 15. Ce que protolex n’essaie pas de faire
+## 13. Exceptions as a general mechanism
 
-Protolex n’essaie pas d’être :
+Protolex uses exceptions as a **general control-flow break mechanism**:
 
-- un langage “rapide à écrire”
-- un langage à macros
-- un langage à métaprogrammation lourde
-- un langage universel
+- `throw` may raise any value
+- `catch *` enables isolation
+- `finally` is strict and non-disruptable
 
-Il vise :
+This model enables:
 
-- la clarté
-- la maintenabilité
-- la discipline explicite
+- error handling
+- event handling
+- protection of execution boundaries
 
 ---
 
-## 16. Positionnement
+## 14. Deliberately limited reflection
 
-Protolex est adapté à :
+Protolex forbids full reflection over the object graph.
 
-- des systèmes de taille moyenne à grande
-- des bases de code longues à maintenir
-- des contextes où la lisibilité prime sur la concision
+It is impossible to:
 
-Il est volontairement exigeant.
+- inspect the prototype chain
+- query the origin of a slot
+- dynamically modify lookup
+
+This choice:
+
+- protects invariants
+- prevents intrusive frameworks
+- preserves readability
+
+---
+
+## 15. What protolex does not try to do
+
+Protolex does not try to be:
+
+- a "fast to write" language
+- a macro language
+- a heavy metaprogramming language
+- a universal language
+
+It aims for:
+
+- clarity
+- maintainability
+- explicit discipline
+
+---
+
+## 16. Positioning
+
+Protolex is suited for:
+
+- medium to large systems
+- long-lived codebases
+- contexts where readability matters more than concision
+
+It is intentionally demanding.
 
 ---
 
 ## 17. Conclusion
 
-Protolex repose sur une idée simple :
+Protolex rests on a simple idea:
 
-> **Ce qui n’est pas explicite n’existe pas.**
+> **What is not explicit does not exist.**
 
-Chaque choix de conception vise à rendre le code :
+Every design choice aims to make code:
 
-- lisible
-- analysable
-- maîtrisable
+- readable
+- analyzable
+- controllable
 
-Ce document fait partie intégrante de la spécification.
-
+This document is an integral part of the specification.
