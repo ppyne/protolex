@@ -1,4 +1,6 @@
-# protolex — DESIGN
+![Protolex](header.png)
+
+# Protolex — DESIGN
 
 This document describes the **design principles**, **intentional choices**, and
 **mechanisms deliberately absent** from protolex.
