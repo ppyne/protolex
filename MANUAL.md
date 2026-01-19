@@ -93,6 +93,9 @@ user = [ proto = base, name = "Ava" ]
 role = user.role   # "guest" (from proto)
 ```
 
+This is the inheritance mechanism in Protolex: objects inherit slots from their
+`proto` chain.
+
 ### clone
 
 `clone(x)` creates a new table whose `proto` is `base`.

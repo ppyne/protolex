@@ -12,7 +12,7 @@ Key constraints: no loops, no `return`, no globals; iteration is library-defined
 - the language specification [`specification.md`](specification.md)
 - the design rationale [`design.md`](design.md)
 - the user manual [`MANUAL.md`](MANUAL.md)
-- the newcomer guide [`FROM_C_PY_PHP_JS.md`](FROM_C_PY_PHP_JS.md)
+- the newcomer guide [`for_newcomers.md`](for_newcomers.md)
 - the core library specification [`corelib.md`](corelib.md) and implementation [`corelib/`](corelib/)
 - the runtime libraries [`runtime/`](runtime/), including [`io`](runtime/io), [`time`](runtime/time.md), [`sys`](runtime/sys.md), [`log`](runtime/log.md), [`string`](runtime/string.md), [`int`](runtime/int.md), [`float`](runtime/float.md), [`math`](runtime/math.md)
 - a reference interpreter in C [`src/`](src/)
@@ -36,7 +36,7 @@ Run an example:
 Next:
 
 - read the manual [`MANUAL.md`](MANUAL.md)
-- read the guide [`FROM_C_PY_PHP_JS.md`](FROM_C_PY_PHP_JS.md)
+- read the guide [`for_newcomers.md`](for_newcomers.md)
 
 ## Corelib entry points
 
@@ -50,7 +50,7 @@ import algo from "corelib/algo/index.plx"
 - [`specification.md`](specification.md) : language spec
 - [`design.md`](design.md) : design principles and rationale
 - [`MANUAL.md`](MANUAL.md) : user manual
-- [`FROM_C_PY_PHP_JS.md`](FROM_C_PY_PHP_JS.md) : guide for C/Python/PHP/JS developers
+- [`for_newcomers.md`](for_newcomers.md) : guide for C/C++/Python/PHP/JS developers
 - [`corelib.md`](corelib.md) : corelib spec
 - [`corelib/ds/`](corelib/ds/) : data structures
 - [`corelib/algo/`](corelib/algo/) : algorithms

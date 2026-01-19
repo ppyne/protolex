@@ -206,6 +206,15 @@ point = [ x = 3, y = 4 ]
 norm2 = fn(p) { p.x * p.x + p.y * p.y }
 ```
 
+Inheritance is done with prototypes via the `proto` slot.
+
+```protolex
+base = [ role = "guest" ]
+user = [ proto = base, name = "Ava" ]
+
+user.role  # inherited from base
+```
+
 ### No RAII or destructors
 
 Resources must be closed explicitly with `try/finally`.
@@ -267,6 +276,15 @@ m = ds.Map.new()
 
 ds.Map.put(m, "user", "ava")
 name = ds.Map.get(m, "user")
+```
+
+Inheritance is done with prototypes via the `proto` slot.
+
+```protolex
+base = [ role = "guest" ]
+user = [ proto = base, name = "Ava" ]
+
+user.role  # inherited from base
 ```
 
 ### No automatic string/number coercion
