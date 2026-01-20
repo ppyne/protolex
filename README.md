@@ -17,6 +17,7 @@ Key constraints: no loops, no `return`, no globals; iteration is library-defined
 - the runtime libraries [`runtime/`](runtime/), including [`io`](runtime/io), [`time`](runtime/time.md), [`sys`](runtime/sys.md), [`log`](runtime/log.md), [`string`](runtime/string.md), [`int`](runtime/int.md), [`float`](runtime/float.md), [`math`](runtime/math.md)
 - a reference interpreter in C [`src/`](src/)
 - example programs [`examples/`](examples/)
+- a browser playground build in [`web/`](web/)
 
 ## Quick start
 
@@ -37,6 +38,23 @@ Next:
 
 - read the manual [`MANUAL.md`](MANUAL.md)
 - read the guide [`for_newcomers.md`](for_newcomers.md)
+
+## Web (Emscripten)
+
+Build the browser version:
+
+```sh
+source /Users/avialle/dev/emsdk/emsdk_env.sh
+make web
+```
+
+Run the playground:
+
+```sh
+python3 -m http.server 8000 -d web
+```
+
+Then open `http://localhost:8000`. See [`web/README.md`](web/README.md).
 
 ## Corelib entry points
 

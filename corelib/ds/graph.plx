@@ -70,7 +70,7 @@ Graph.of = fn(adj) {
         loop = fn(i) {
             if i < Array.length(adj) {
                 edge = Array.get(adj, i)
-                Graph.addEdge(g, edge.from, edge.to)
+                Graph.addEdge(g, edge["from"], edge.to)
                 loop(i + 1)
             } else {
                 g
@@ -84,7 +84,7 @@ Graph.of = fn(adj) {
                 g
             } else {
                 edge = List.head(lst)
-                Graph.addEdge(g, edge.from, edge.to)
+                Graph.addEdge(g, edge["from"], edge.to)
                 loop(List.tail(lst))
             }
         }

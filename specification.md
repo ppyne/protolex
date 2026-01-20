@@ -77,6 +77,20 @@ Rules:
 
 After parsing, there is no trace of the original literal form.
 
+### 1.1.2. String literals
+
+String literals are delimited by double quotes.
+
+Supported escapes:
+
+```protolex
+"\n"  # newline
+"\t"  # tab
+"\r"  # carriage return
+"\""  # double quote
+"\\"  # backslash
+```
+
 ### 1.2. Type predicates
 
 The language provides explicit type predicates:

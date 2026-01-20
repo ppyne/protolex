@@ -255,6 +255,12 @@ string.forEach("hi", fn(c, i) {
 `string.forEach` iterates bytes (one-byte strings). There is no Unicode-aware
 iterator in the runtime today.
 
+String literals support escapes:
+
+```protolex
+"\n" "\t" "\r" "\"" "\\"
+```
+
 ## 7. Core data structures
 
 All structures live in the corelib `ds` module.

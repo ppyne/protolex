@@ -194,8 +194,32 @@ typedef struct {
     size_t current;
 } Parser;
 
+static Parser *g_parse_parser = NULL;
+static const char *g_parse_file = NULL;
+
+static Token *peek(Parser *p);
+
+static void set_parse_context(Parser *p, const char *file) {
+    g_parse_parser = p;
+    g_parse_file = file;
+}
+
+static void clear_parse_context(void) {
+    g_parse_parser = NULL;
+    g_parse_file = NULL;
+}
+
 void runtime_fatal(const char *msg) {
-    fprintf(stderr, "fatal: %s\n", msg);
+    if (g_parse_parser) {
+        Token *tok = peek(g_parse_parser);
+        if (g_parse_file) {
+            fprintf(stderr, "fatal: %s at %s:%d:%d\n", msg, g_parse_file, tok->line, tok->col);
+        } else {
+            fprintf(stderr, "fatal: %s at %d:%d\n", msg, tok->line, tok->col);
+        }
+    } else {
+        fprintf(stderr, "fatal: %s\n", msg);
+    }
     exit(1);
 }
 
@@ -998,24 +1022,61 @@ static TokenList lex_source(const char *src) {
         if (c == '"') {
             lex.pos++;
             lex.col++;
-            size_t start = lex.pos;
+            size_t cap = 16;
+            size_t len = 0;
+            char *buf = xmalloc(cap);
             while (lex.pos < lex.len && lex.src[lex.pos] != '"') {
-                if (lex.src[lex.pos] == '\\' && lex.pos + 1 < lex.len) {
+                char ch = lex.src[lex.pos];
+                if (ch == '\\' && lex.pos + 1 < lex.len) {
+                    char esc = lex.src[lex.pos + 1];
+                    switch (esc) {
+                    case 'n':
+                        ch = '\n';
+                        break;
+                    case 't':
+                        ch = '\t';
+                        break;
+                    case 'r':
+                        ch = '\r';
+                        break;
+                    case '"':
+                        ch = '"';
+                        break;
+                    case '\\':
+                        ch = '\\';
+                        break;
+                    default:
+                        runtime_fatal("invalid escape in string literal");
+                    }
                     lex.pos += 2;
                     lex.col += 2;
                 } else {
                     lex.pos++;
                     lex.col++;
                 }
+                if (len + 1 >= cap) {
+                    cap *= 2;
+                    buf = realloc(buf, cap);
+                    if (!buf) {
+                        runtime_fatal("out of memory");
+                    }
+                }
+                buf[len++] = ch;
             }
-            size_t len = lex.pos - start;
-            char *raw = xstrndup(lex.src + start, len);
             if (lex.pos < lex.len && lex.src[lex.pos] == '"') {
                 lex.pos++;
                 lex.col++;
             }
+            if (len + 1 >= cap) {
+                cap++;
+                buf = realloc(buf, cap);
+                if (!buf) {
+                    runtime_fatal("out of memory");
+                }
+            }
+            buf[len] = '\0';
             Token tok = make_token(TOK_STRING, line, col);
-            tok.lexeme = raw;
+            tok.lexeme = buf;
             token_list_push(&tokens, tok);
             continue;
         }
@@ -1966,7 +2027,9 @@ static EvalResult eval_node(Node *node, Env *env, const char *module_dir) {
         Parser parser;
         parser.tokens = tokens;
         parser.current = 0;
+        set_parse_context(&parser, full);
         Node *program = parse_program(&parser);
+        clear_parse_context();
 
         char *dir = NULL;
         char *slash = strrchr(full, '/');
@@ -2232,7 +2295,9 @@ int main(int argc, char **argv) {
     Parser parser;
     parser.tokens = tokens;
     parser.current = 0;
+    set_parse_context(&parser, argv[1]);
     Node *program = parse_program(&parser);
+    clear_parse_context();
     Env *env = make_root_env();
     char *dir = NULL;
     char *slash = strrchr(argv[1], '/');

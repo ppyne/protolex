@@ -9,6 +9,10 @@ assert(a == 5, "math")
 
 s = "ok"
 assert(s == "ok", "string")
+assert("hello\n" == "hello\n", "string escape newline")
+assert("tab\tend" == "tab\tend", "string escape tab")
+assert("quote:\"" == "quote:\"", "string escape quote")
+assert("slash:\\\\" == "slash:\\\\", "string escape backslash")
 
 t = [
     proto = null,

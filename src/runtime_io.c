@@ -4,11 +4,33 @@
 
 #include "runtime_io.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 typedef struct {
     Table *object;
     FILE *file;
     bool owned;
 } FileEntry;
+
+#ifdef __EMSCRIPTEN__
+EM_JS(void, protolex_write_js, (const char *ptr, int len, int is_err), {
+    var text = UTF8ToString(ptr, len);
+    if (typeof window !== "undefined") {
+        var fn = is_err ? window.protolexWriteErr : window.protolexWrite;
+        if (typeof fn === "function") {
+            fn(text);
+            return;
+        }
+    }
+    if (is_err) {
+        console.error(text);
+    } else {
+        console.log(text);
+    }
+});
+#endif
 
 static FileEntry *files = NULL;
 static size_t file_count = 0;
@@ -98,11 +120,18 @@ static Value native_io_write(int argc, Value *argv, EvalResult *err) {
         runtime_set_error(err, "invalid file");
         return make_null();
     }
+#ifdef __EMSCRIPTEN__
+    if (entry->file == stdout || entry->file == stderr) {
+        protolex_write_js(argv[1].as.str->data, (int)argv[1].as.str->len, entry->file == stderr);
+        return make_null();
+    }
+#endif
     size_t written = fwrite(argv[1].as.str->data, 1, argv[1].as.str->len, entry->file);
     if (written != argv[1].as.str->len) {
         runtime_set_error(err, "io.write failed");
         return make_null();
     }
+    fflush(entry->file);
     return make_null();
 }
 
@@ -128,6 +157,8 @@ Table *runtime_io_build(void) {
         return runtime_ctx.io;
     }
     Table *io = table_new();
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     Function *open_fn = xmalloc(sizeof(Function));
     open_fn->is_native = true;
     open_fn->native = native_io_open;
