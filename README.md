@@ -30,7 +30,7 @@ You can tryout Protolex trait away with a demo running on the web thanks to weba
 Build the interpreter:
 
 ```sh
-cd src
+cd protolex
 make
 ```
 
