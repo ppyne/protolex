@@ -8,7 +8,49 @@ const sourceEl = document.getElementById("source");
 const runBtn = document.getElementById("run");
 const statusEl = document.getElementById("status");
 
-sourceEl.value = sample;
+let editor = null;
+
+if (window.CodeMirror && window.CodeMirror.defineSimpleMode) {
+  CodeMirror.defineSimpleMode("protolex", {
+    start: [
+      { regex: /#.*$/, token: "comment" },
+      { regex: /"(?:[^"\\]|\\.)*"/, token: "string" },
+      {
+        regex:
+          /\b(?:0x[0-9a-fA-F]+|0b[01]+|0o[0-7]+|\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?\b/,
+        token: "number",
+      },
+      {
+        regex:
+          /\b(?:import|from|fn|if|else|mutate|undefine|try|catch|finally|throw)\b/,
+        token: "keyword",
+      },
+      { regex: /\b(?:true|false|null)\b/, token: "atom" },
+      {
+        regex:
+          /\b(?:has|clone|freeze|isAbsent|isInt|isFloat|isString|isBool|isTable|isFunction)\b/,
+        token: "keyword",
+      },
+      {
+        regex:
+          /\b(?:List|Array|Map|Set|Stack|Queue|Tree|Graph)\b/,
+        token: "atom",
+      },
+      { regex: /\bproto\b/, token: "atom" },
+      { regex: /==|!=|<=|>=|&&|\|\||[+\-*/%<>=.]/, token: "operator" },
+    ],
+  });
+  editor = CodeMirror.fromTextArea(sourceEl, {
+    mode: "protolex",
+    theme: "protolex",
+    lineNumbers: true,
+    lineWrapping: true,
+  });
+  editor.setValue(sample);
+} else {
+  sourceEl.value = sample;
+}
+
 runBtn.disabled = true;
 
 const appendOut = (text) => {
@@ -55,7 +97,7 @@ const runProgram = () => {
   statusEl.textContent = "Running…";
   runBtn.disabled = true;
   try {
-    const code = sourceEl.value;
+    const code = editor ? editor.getValue() : sourceEl.value;
     runtime.FS.writeFile("/program.plx", code);
     runtime.callMain(["/program.plx"]);
   } catch (err) {

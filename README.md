@@ -30,3 +30,6 @@ python3 -m http.server 8000 -d web
 ```
 
 Open `http://localhost:8000` and run code in the textarea.
+
+Notes:
+- The editor uses CodeMirror 5 from a CDN for syntax highlighting.

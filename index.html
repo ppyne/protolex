@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Protolex Playground</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/codemirror@5.65.16/lib/codemirror.css"
+    />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;600&display=swap");
 
@@ -88,6 +92,47 @@
         line-height: 1.5;
       }
 
+      .CodeMirror {
+        height: 320px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #0c1114;
+        color: var(--text);
+        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        padding: 4px;
+        overflow: hidden;
+      }
+
+
+      .CodeMirror-gutters {
+        background: #0c1114;
+        border-right: 1px solid var(--border);
+        color: var(--muted);
+      }
+
+      .cm-s-protolex .cm-keyword { color: #f6c356; }
+      .cm-s-protolex .cm-atom { color: #e16b5c; }
+      .cm-s-protolex .cm-number { color: #8fd3ff; }
+      .cm-s-protolex .cm-string { color: #7cd992; }
+      .cm-s-protolex .cm-comment { color: #708089; font-style: italic; }
+      .cm-s-protolex .cm-operator { color: #f2f2f2; }
+
+      .CodeMirror-cursor {
+        border-left: 2px solid #f6c356;
+      }
+
+      .CodeMirror-hscrollbar,
+      .CodeMirror-scrollbar-filler {
+        display: none !important;
+      }
+
+      .CodeMirror-scrollbar-filler,
+      .CodeMirror-gutter-filler {
+        background: #0c1114;
+      }
+
       .controls {
         display: flex;
         gap: 12px;
@@ -151,6 +196,8 @@
         <pre id="output"></pre>
       </section>
     </main>
+    <script src="https://unpkg.com/codemirror@5.65.16/lib/codemirror.js"></script>
+    <script src="https://unpkg.com/codemirror@5.65.16/addon/mode/simple.js"></script>
     <script src="app.js"></script>
     <script src="protolex.js"></script>
     <script>
