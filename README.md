@@ -19,6 +19,12 @@ Key constraints: no loops, no `return`, no globals; iteration is library-defined
 - example programs [`examples/`](examples/)
 - a browser playground build in [`web/`](web/)
 
+## Demo
+
+You can tryout Protolex trait away with a demo running on the web thanks to webasm (compiled with emsripten):
+
+**Try it now:** [`ppyne.github.io/protolex/`](https://ppyne.github.io/protolex/)
+
 ## Quick start
 
 Build the interpreter:
