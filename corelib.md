@@ -1,430 +1,296 @@
 ![Protolex](header.png)
 
-# Protolex Corelib — Specification 0.1
+# Protolex Corelib — User Guide 0.1
 
-## 0. Goal
+This document explains how to use corelib in practice.
+It focuses on concrete operations and examples.
 
-`protolex-corelib` defines a **minimal but extensible** set of data structures and algorithms provided by the protolex runtime.
+## 1. Imports and entry points
 
-The corelib:
+```protolex
+import ds from "corelib/ds/index.plx"
+import algo from "corelib/algo/index.plx"
+```
 
-- **adds no rule to the language**
+Corelib provides:
+- data structures under `ds`
+- algorithms under `algo`
 
-- introduces **no keyword**
+## 2. Iteration (no loops)
 
-- strictly respects:
+There are no `for`/`while`. You iterate with library functions or recursion.
 
-  - freeze by default
+```protolex
+import ds from "corelib/ds/index.plx"
 
-  - controlled mutation
+list = ds.List.of([1, 2, 3])
 
-  - the absence of globals
+sum = ds.List.fold(fn(acc, x) { acc + x }, 0, list)
+```
 
-  - the absence of reflection
+## 3. Lists (`ds.List`)
 
-All structures are exposed as **ordinary frozen objects**.
+Lists are immutable linked lists. You build them with `cons` and `nil`, or with `List.of`.
 
-## Absence predicate
+### 3.1. Constructors
 
-The language provides a standard predicate `isAbsent(expr)` to test whether
-evaluating `expr` resulted in a missing slot (lookup failed).
-
-Absence is not a value and cannot be stored or compared.
-
----
-
-## 1. General principles
-
-### 1.1. No built-in structures in the language
-
-Protolex defines **no built-in data structure** other than the table.
-
-All structures below are:
-
-- provided by the runtime
-
-- accessible via import
-
-- implemented as objects + functions
-
----
-
-### 1.2. Freeze and encapsulation
-
-- objects representing structures are **frozen**
-
-- users **can never mutate directly** their invariants
-
-- internal mutation is allowed **only** inside corelib functions
-
-This guarantees:
-
-- safety
-
-- consistency
-
-- no structural corruption
-
----
-
-### 1.3. Naming and organization
-
-The corelib is organized into **object namespaces**:
-
-`ds    // data structures algo  // algorithms`
-
-### 1.4. File organization
-
-The corelib is split by topic into dedicated folders:
-
-`corelib/ds/*.plx`
-
-`corelib/algo/*.plx`
-
-Entry points are:
-
-`import ds   from "corelib/ds/index.plx"`
-
-`import algo from "corelib/algo/index.plx"`
-
----
-
-### 1.5. Iteration
-
-The language provides no loop syntax. Iteration is expressed through library
-functions such as:
-
-- `List.forEach`, `List.map`, `List.fold`, `List.filter`
-
-- `Array.forEach`, `Array.map`, `Array.fold`, `Array.length`
-
-Control flow remains explicit and local to the library.
+- `ds.List.nil`
+- `ds.List.cons(head, tail)`
+- `ds.List.of(listOrArray)`
 
 Example:
 
 ```protolex
 import ds from "corelib/ds/index.plx"
 
-sum = ds.Array.fold(
-    fn(acc, x) { acc + x },
-    0,
-    ds.Array.of(ds.List.of([1, 2, 3]))
-)
+list = ds.List.cons(1,
+       ds.List.cons(2,
+       ds.List.cons(3,
+       ds.List.nil)))
+
+list2 = ds.List.of([1, 2, 3])
 ```
 
----
+### 3.2. Access
 
-### 1.6. Primitive helpers
+- `ds.List.isNil(list)`
+- `ds.List.head(list)`
+- `ds.List.tail(list)`
 
-`int`, `float`, and `math` are runtime libraries, not corelib modules. They are
-documented under `runtime/` and do not alter the language.
+Example:
 
-## 2. Fundamental data structures (`ds`)
+```protolex
+if ds.List.isNil(list) {
+    "empty"
+} else {
+    ds.List.head(list)
+}
+```
 
----
+### 3.3. Iteration and transform
 
-## 2.1. List — immutable linked list
+- `ds.List.forEach(f, list)`
+- `ds.List.map(f, list)`
+- `ds.List.fold(f, acc, list)`
+- `ds.List.filter(pred, list)`
+- `ds.List.length(list)`
+- `ds.List.reverse(list)`
 
-### 2.1.1. Nature
+Example (map + fold):
 
-- persistent list
+```protolex
+doubles = ds.List.map(fn(x) { x * 2 }, list)
+count = ds.List.length(doubles)
+```
 
-- immutable by default
+### 3.4. Print a list
 
-- explicit recursive structure
+```protolex
+import io from "runtime/io"
+import string from "runtime/string"
+import ds from "corelib/ds/index.plx"
 
-### 2.1.2. Minimal interface
+list = ds.List.of([1, 2, 3])
 
-`ds.List.nil ds.List.cons(head, tail) ds.List.isNil(list) ds.List.head(list) ds.List.tail(list)`
+emit = fn(x) {
+    io.write(io.stdout, string.format("%d\n", x))
+}
 
-### 2.1.3. Utility functions
+ds.List.forEach(emit, list)
+```
 
-`ds.List.length(list) ds.List.map(fn, list) ds.List.fold(fn, init, list) ds.List.reverse(list)`
+## 4. Arrays (`ds.Array`)
 
-### 2.1.4. Properties
+Arrays are indexed structures with internal mutation (encapsulated).
 
-- no mutation
+### 4.1. Constructors
 
-- structural sharing
+- `ds.Array.new()`
+- `ds.Array.of(listOrArray)`
 
-- controlled memory cost
+Example:
 
-- fully compatible with `clone`
+```protolex
+arr = ds.Array.new()
 
----
+ds.Array.push(arr, 10)
+ds.Array.push(arr, 20)
+```
 
-## 2.2. Array — encapsulated dynamic array
+### 4.2. Access and update
 
-### 2.2.1. Nature
+- `ds.Array.length(arr)`
+- `ds.Array.get(arr, index)`
+- `ds.Array.set(arr, index, value)`
+- `ds.Array.push(arr, value)`
+- `ds.Array.pop(arr)`
 
-- indexed sequential structure
+### 4.3. Iteration
 
-- order guaranteed **by the structure**
+- `ds.Array.forEach(f, arr)`
+- `ds.Array.map(f, arr)`
+- `ds.Array.fold(f, acc, arr)`
 
-- controlled internal mutation
+Example:
 
-### 2.2.2. Creation
+```protolex
+sum = ds.Array.fold(fn(acc, x) { acc + x }, 0, arr)
+```
 
-`a = ds.Array.new()`
+## 5. Maps (`ds.Map`)
 
-### 2.2.3. Access
+Maps are key/value dictionaries independent from tables.
 
-`ds.Array.length(a) ds.Array.get(a, index) ds.Array.set(a, index, value)`
+### 5.1. Constructors
 
-### 2.2.4. Modification
+- `ds.Map.new()`
+- `ds.Map.of(pairs)` where pairs are `{ key, value }`
 
-`ds.Array.push(a, value) ds.Array.pop(a) ds.Array.insert(a, index, value) ds.Array.remove(a, index)`
+Example:
 
-### 2.2.5. Guarantees
+```protolex
+m = ds.Map.new()
 
-- object `a` remains frozen from the user's perspective
+ds.Map.put(m, "user", "ava")
+value = ds.Map.get(m, "user")
+exists = ds.Map.has(m, "user")
+```
 
-- all mutation is internal to the corelib
+### 5.2. API
 
-- out-of-bounds indices -> exception
+- `ds.Map.put(m, key, value)`
+- `ds.Map.get(m, key)`
+- `ds.Map.has(m, key)`
+- `ds.Map.remove(m, key)`
+- `ds.Map.size(m)`
 
----
+## 6. Sets (`ds.Set`)
 
-## 2.3. Map — key -> value dictionary
+Sets store unique values.
 
-### 2.3.1. Nature
+### 6.1. Constructors
 
-- key -> value association
+- `ds.Set.new()`
+- `ds.Set.of(listOrArrayOrSet)`
 
-- implementation free (hash, tree, etc.)
+### 6.2. API
 
-- totally independent from the protolex table
+- `ds.Set.add(s, value)`
+- `ds.Set.remove(s, value)`
+- `ds.Set.contains(s, value)`
+- `ds.Set.size(s)`
 
-### 2.3.2. Interface
-
-`m = ds.Map.new() ds.Map.put(m, key, value) ds.Map.get(m, key) ds.Map.has(m, key) ds.Map.remove(m, key) ds.Map.size(m)`
-
----
-
-## 2.4. Set — mathematical set
-
-### 2.4.1. Nature
-
-- set with no duplicates
-
-- conceptually based on Map
-
-### 2.4.2. Interface
-
-`s = ds.Set.new() ds.Set.add(s, value) ds.Set.remove(s, value) ds.Set.contains(s, value) ds.Set.size(s)`
-
----
-
-## 2.5. Stack / Queue / Deque
-
-Classic sequential structures, explicit interfaces:
+## 7. Stack (`ds.Stack`) and Queue (`ds.Queue`)
 
 ### Stack (LIFO)
 
-`st = ds.Stack.new() ds.Stack.push(st, value) ds.Stack.pop(st) ds.Stack.peek(st)`
+- `ds.Stack.new()`
+- `ds.Stack.push(st, value)`
+- `ds.Stack.pop(st)`
+- `ds.Stack.peek(st)`
+- `ds.Stack.of(listOrArray)`
 
 ### Queue (FIFO)
 
-`q = ds.Queue.new() ds.Queue.enqueue(q, value) ds.Queue.dequeue(q)`
+- `ds.Queue.new()`
+- `ds.Queue.enqueue(q, value)`
+- `ds.Queue.dequeue(q)`
+- `ds.Queue.of(listOrArray)`
 
----
+## 8. Tree (`ds.Tree`)
 
-## 2.6. Tree — trees
+Trees are ordered by a `compare(a, b)` function.
 
-### 2.6.1. Binary tree (base)
+### Constructors
 
-`t = ds.Tree.empty() ds.Tree.insert(t, value, compare) ds.Tree.contains(t, value, compare) ds.Tree.remove(t, value, compare)`
+- `ds.Tree.empty()`
+- `ds.Tree.of(listOrArray, compare)`
 
-### 2.6.2. Possible variants (optional)
+### API
 
-- AVL
+- `ds.Tree.insert(t, value, compare)`
+- `ds.Tree.contains(t, value, compare)`
+- `ds.Tree.remove(t, value, compare)`
 
-- Red-Black
-
-- B-Tree
-
-Each variant is exposed as a **distinct object**.
-
----
-
-## 2.7. Graph — graphs
-
-### 2.7.1. Nature
-
-- directed or undirected graph
-
-- internal representation is free
-
-### 2.7.2. Minimal interface
-
-`g = ds.Graph.new() ds.Graph.addNode(g, node) ds.Graph.addEdge(g, from, to) ds.Graph.neighbors(g, node)`
-
----
-
-## 3. Algorithms (`algo`)
-
-Algorithms are **separate from structures**.
-
----
-
-## 3.1. Sorting (`algo.Sort`)
-
-Each algorithm is explicitly named.
-
-`algo.Sort.quick(array, compare) algo.Sort.merge(array, compare) algo.Sort.heap(array, compare) algo.Sort.insertion(array, compare)`
-
-- no implicit sort
-
-- `compare(a, b)` returns bool or order
-
----
-
-## 3.2. Search (`algo.Search`)
-
-`algo.Search.linear(array, value) algo.Search.binary(array, value, compare) algo.Search.tree(tree, value, compare)`
-
----
-
-## 3.3. Traversal and graphs
-
-`algo.Search.bfs(graph, start) algo.Search.dfs(graph, start) algo.Search.dijkstra(graph, start) algo.Search.astar(graph, start, heuristic)`
-
----
-
-## 4. Errors and exceptions
-
-- any invariant violation -> `throw`
-
-- no special return value
-
-- no silent fallback
-
-- exceptions cross calls normally
-
----
-
-## 5. What corelib does not do
-
-The corelib **does not provide**:
-
-- concurrency
-
-- parallelism
-
-- persistence
-
-- serialization
-
-- I/O
-
-- memory management
-
-- typing
-
-These aspects belong to the runtime or separate libraries.
-
----
-
-## 6. Extension and compatibility
-
-- any new structure must:
-
-  - be an ordinary object
-
-  - respect freezing
-
-  - make all mutation explicit
-
-- no extension may modify the language spec
-
----
-
-## 7. Status
-
-This document defines **protolex-corelib 0.1**.
-It is strictly compatible with **protolex 0.1** and can evolve independently.
-
----
-
-## Simplified collection construction
-
-To ease the construction of data structures without introducing new syntax or dedicated literals,
-the corelib provides explicit constructor functions.
-
-### List.of
+Example:
 
 ```protolex
-ds.List.of(listOrArray)
+compare = fn(a, b) { a < b }
+
+t = ds.Tree.empty()
+
+t = ds.Tree.insert(t, 3, compare)
+
+t = ds.Tree.insert(t, 1, compare)
+
+has3 = ds.Tree.contains(t, 3, compare)
 ```
 
-Builds an immutable list from a list or an array.
+## 9. Graph (`ds.Graph`)
 
-### Array.of
+Graphs are built from edges `{ from, to }`.
+
+### Constructors
+
+- `ds.Graph.new()`
+- `ds.Graph.of(edges)` where edges are list/array of `{ from, to }`
+
+### API
+
+- `ds.Graph.addNode(g, node)`
+- `ds.Graph.addEdge(g, from, to)`
+- `ds.Graph.neighbors(g, node)`
+- `ds.Graph.hasNode(g, node)`
+
+Example:
 
 ```protolex
-ds.Array.of(listOrArray)
+edges = ds.Array.new()
+
+ds.Array.push(edges, [ from = "a", to = "b" ])
+ds.Array.push(edges, [ from = "b", to = "c" ])
+
+g = ds.Graph.of(edges)
+
+nbs = ds.Graph.neighbors(g, "b")
 ```
 
-Builds a dynamic array from a list or an array.
+## 10. Algorithms (`algo`)
 
-### Map.of
+Algorithms are separate from structures.
+
+### 10.1. Sorting (`algo.Sort`)
+
+- `algo.Sort.insertion(arr, less)`
+- `algo.Sort.selection(arr, less)`
+- `algo.Sort.quick(arr, less)`
+
+Example:
 
 ```protolex
-ds.Map.of(pairs)
+import ds from "corelib/ds/index.plx"
+import algo from "corelib/algo/index.plx"
+
+arr = ds.Array.of([5, 2, 9, 1])
+less = fn(a, b) { a < b }
+
+sorted = algo.Sort.quick(arr, less)
 ```
 
-Builds a map from a list or array of `{ key, value }` pairs.
+### 10.2. Search (`algo.Search`)
 
-### Set.of
+- `algo.Search.linear(arr, value)`
+- `algo.Search.binary(arr, value, less)`
+- `algo.Search.bfs(graph, start)`
+
+Example:
 
 ```protolex
-ds.Set.of(listOrArrayOrSet)
+index = algo.Search.linear(arr, 9)
 ```
 
-Builds a set from a set, list, or array.
+## 11. Notes
 
-### Stack.of
-
-```protolex
-ds.Stack.of(listOrArray)
-```
-
-Builds a stack by pushing items in order.
-
-### Queue.of
-
-```protolex
-ds.Queue.of(listOrArray)
-```
-
-Builds a queue by enqueuing items in order.
-
-### Tree.of
-
-```protolex
-ds.Tree.of(listOrArray, compare)
-```
-
-Builds a tree by inserting items in order using `compare`.
-
-### Graph.of
-
-```protolex
-ds.Graph.of(edges)
-```
-
-Builds a graph from a list or array of `{ from, to }` edges.
-
-These functions replace any attempt at list or map literals, which are intentionally absent from the language.
-
----
-
-## Absence of overloadable operators
-
-The corelib does not redefine or overload **any syntactic operator** of the language.
-
-All operations (arithmetic, algorithmic, structural)
-are exposed as explicit named functions
-(`Sort.quick`, `List.map`, `Map.put`, etc.).
-
----
+- There are no language-level loops; use `List.*`, `Array.*`, or recursion.
+- Construction helpers like `List.of` and `Array.of` are the easiest way to initialize data.
+- Data structures expose explicit APIs; there is no implicit iteration on tables.
