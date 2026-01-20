@@ -1,0 +1,1166 @@
+# protolex-corelib — algo/index
+# Version 0.1
+
+import Sort   from "sort.plx"
+import Search from "search.plx"
+
+algo = [
+    Sort   = Sort,
+    Search = Search
+]
+
+freeze(algo)
+
+algo
+# protolex-corelib — algo/list
+# Version 0.1
+
+import ds from "../ds/index.plx"
+
+ListAlgo = [
+    proto = null
+]
+
+ListAlgo.isEmpty = fn(list) {
+    ds.List.isNil(list)
+}
+
+ListAlgo.length = fn(list) {
+    ds.List.length(list)
+}
+
+ListAlgo.map = fn(f, list) {
+    ds.List.map(f, list)
+}
+
+ListAlgo.filter = fn(pred, list) {
+    if ds.List.isNil(list) {
+        ds.List.nil
+    } else {
+        h = ds.List.head(list)
+        t = ds.List.tail(list)
+        if pred(h) {
+            ds.List.cons(h, ListAlgo.filter(pred, t))
+        } else {
+            ListAlgo.filter(pred, t)
+        }
+    }
+}
+
+ListAlgo.foldLeft = fn(f, acc, list) {
+    if ds.List.isNil(list) {
+        acc
+    } else {
+        ListAlgo.foldLeft(
+            f,
+            f(acc, ds.List.head(list)),
+            ds.List.tail(list)
+        )
+    }
+}
+
+ListAlgo.foldRight = fn(f, acc, list) {
+    if ds.List.isNil(list) {
+        acc
+    } else {
+        f(
+            ds.List.head(list),
+            ListAlgo.foldRight(f, acc, ds.List.tail(list))
+        )
+    }
+}
+
+ListAlgo.reverse = fn(list) {
+    ds.List.reverse(list)
+}
+
+ListAlgo.find = fn(pred, list) {
+    if ds.List.isNil(list) {
+        null
+    } else {
+        h = ds.List.head(list)
+        if pred(h) {
+            h
+        } else {
+            ListAlgo.find(pred, ds.List.tail(list))
+        }
+    }
+}
+
+ListAlgo.contains = fn(value, list) {
+    ListAlgo.find(fn(x) { x == value }, list) != null
+}
+
+ListAlgo.partition = fn(pred, list) {
+    split = fn(lst, yes, no) {
+        if ds.List.isNil(lst) {
+            [
+                yes = ds.List.reverse(yes),
+                no  = ds.List.reverse(no)
+            ]
+        } else {
+            h = ds.List.head(lst)
+            t = ds.List.tail(lst)
+            if pred(h) {
+                split(t, ds.List.cons(h, yes), no)
+            } else {
+                split(t, yes, ds.List.cons(h, no))
+            }
+        }
+    }
+    split(list, ds.List.nil, ds.List.nil)
+}
+
+ListAlgo.split = fn(list) {
+    if ds.List.isNil(list) || ds.List.isNil(ds.List.tail(list)) {
+        [
+            left  = list,
+            right = ds.List.nil
+        ]
+    } else {
+        slow = list
+        fast = ds.List.tail(list)
+
+        advance = fn(s, f) {
+            if ds.List.isNil(f) || ds.List.isNil(ds.List.tail(f)) {
+                s
+            } else {
+                advance(ds.List.tail(s), ds.List.tail(ds.List.tail(f)))
+            }
+        }
+
+        mid = advance(slow, fast)
+        right = ds.List.tail(mid)
+
+        [
+            left  = list,
+            right = right,
+            cut   = mid
+        ]
+    }
+}
+
+ListAlgo.merge = fn(a, b, less) {
+    if ds.List.isNil(a) {
+        b
+    } else if ds.List.isNil(b) {
+        a
+    } else {
+        ha = ds.List.head(a)
+        hb = ds.List.head(b)
+        if less(ha, hb) {
+            ds.List.cons(ha, ListAlgo.merge(ds.List.tail(a), b, less))
+        } else {
+            ds.List.cons(hb, ListAlgo.merge(a, ds.List.tail(b), less))
+        }
+    }
+}
+
+ListAlgo.sort = fn(list, less) {
+    if ds.List.isNil(list) || ds.List.isNil(ds.List.tail(list)) {
+        list
+    } else {
+        parts = ListAlgo.partition(
+            fn(_) { true },
+            list
+        )
+        slow = list
+        fast = ds.List.tail(list)
+
+        advance = fn(s, f) {
+            if ds.List.isNil(f) || ds.List.isNil(ds.List.tail(f)) {
+                s
+            } else {
+                advance(ds.List.tail(s), ds.List.tail(ds.List.tail(f)))
+            }
+        }
+
+        mid = advance(slow, fast)
+        right = ds.List.tail(mid)
+
+        leftSorted  = ListAlgo.sort(list, less)
+        rightSorted = ListAlgo.sort(right, less)
+
+        ListAlgo.merge(leftSorted, rightSorted, less)
+    }
+}
+
+freeze(ListAlgo)
+
+algo_list = [
+    List = ListAlgo
+]
+
+algo_list
+# protolex-corelib — algo/search
+# Version 0.1
+
+import ds from "../ds/index.plx"
+
+Search = [
+    proto = null
+]
+
+Search.linear = fn(arr, value) {
+    n = ds.Array.length(arr)
+    loop = fn(i) {
+        if i >= n {
+            null
+        } else if ds.Array.get(arr, i) == value {
+            i
+        } else {
+            loop(i + 1)
+        }
+    }
+    loop(0)
+}
+
+Search.binary = fn(arr, value, less) {
+    loop = fn(low, high) {
+        if low > high {
+            null
+        } else {
+            mid = (low + high) / 2
+            midval = ds.Array.get(arr, mid)
+
+            if midval == value {
+                mid
+            } else if less(midval, value) {
+                loop(mid + 1, high)
+            } else {
+                loop(low, mid - 1)
+            }
+        }
+    }
+    loop(0, ds.Array.length(arr) - 1)
+}
+
+Search.bfs = fn(g, start) {
+    if !ds.Graph.hasNode(g, start) {
+        ds.Array.new()
+    } else {
+        visited = ds.Set.new()
+        order = ds.Array.new()
+        q = ds.Queue.new()
+
+        ds.Set.add(visited, start)
+        ds.Queue.enqueue(q, start)
+        ds.Array.push(order, start)
+
+        visit_neighbors = fn(neighbors, i) {
+            if i >= ds.Array.length(neighbors) {
+                null
+            } else {
+                nb = ds.Array.get(neighbors, i)
+                if !ds.Set.contains(visited, nb) {
+                    ds.Set.add(visited, nb)
+                    ds.Queue.enqueue(q, nb)
+                    ds.Array.push(order, nb)
+                }
+                visit_neighbors(neighbors, i + 1)
+            }
+        }
+
+        loop = fn() {
+            if q.head >= ds.Array.length(q._impl) {
+                order
+            } else {
+                node = ds.Queue.dequeue(q)
+                neighbors = ds.Graph.neighbors(g, node)
+                visit_neighbors(neighbors, 0)
+                loop()
+            }
+        }
+        loop()
+    }
+}
+
+freeze(Search)
+
+Search
+# protolex-corelib — algo/sort
+# Version 0.1
+
+import ds from "../ds/index.plx"
+
+Sort = [
+    proto = null
+]
+
+Sort.insertion = fn(arr, less) {
+    n = ds.Array.length(arr)
+    insert_at = fn(i) {
+        if i >= n {
+            null
+        } else {
+            key = ds.Array.get(arr, i)
+            shift = fn(j) {
+                if j >= 0 && less(key, ds.Array.get(arr, j)) {
+                    ds.Array.set(arr, j + 1, ds.Array.get(arr, j))
+                    shift(j - 1)
+                } else {
+                    ds.Array.set(arr, j + 1, key)
+                }
+            }
+            shift(i - 1)
+            insert_at(i + 1)
+        }
+    }
+    insert_at(1)
+}
+
+Sort.selection = fn(arr, less) {
+    n = ds.Array.length(arr)
+    find_min = fn(j, min) {
+        if j >= n {
+            min
+        } else if less(ds.Array.get(arr, j), ds.Array.get(arr, min)) {
+            find_min(j + 1, j)
+        } else {
+            find_min(j + 1, min)
+        }
+    }
+    select = fn(i) {
+        if i >= n - 1 {
+            null
+        } else {
+            min = find_min(i + 1, i)
+            if min != i {
+                tmp = ds.Array.get(arr, i)
+                ds.Array.set(arr, i, ds.Array.get(arr, min))
+                ds.Array.set(arr, min, tmp)
+            }
+            select(i + 1)
+        }
+    }
+    select(0)
+}
+
+Sort.quick = fn(arr, less) {
+
+    partition = fn(low, high) {
+        pivot = ds.Array.get(arr, high)
+        swap = fn(a, b) {
+            tmp = ds.Array.get(arr, a)
+            ds.Array.set(arr, a, ds.Array.get(arr, b))
+            ds.Array.set(arr, b, tmp)
+        }
+        walk = fn(j, i) {
+            if j >= high {
+                swap(i, high)
+                i
+            } else if less(ds.Array.get(arr, j), pivot) {
+                swap(i, j)
+                walk(j + 1, i + 1)
+            } else {
+                walk(j + 1, i)
+            }
+        }
+        walk(low, low)
+    }
+
+    qs = fn(low, high) {
+        if low < high {
+            p = partition(low, high)
+            qs(low, p - 1)
+            qs(p + 1, high)
+        }
+    }
+
+    n = ds.Array.length(arr)
+    if n > 1 {
+        qs(0, n - 1)
+    }
+}
+
+freeze(Sort)
+
+Sort
+# protolex-corelib — ds/array
+# Version 0.1
+
+Array = [
+    proto = null
+]
+
+Array.new = fn() {
+    internal = [
+        proto = null,
+        data = [],
+        size = 0
+    ]
+
+    arr = [
+        proto = Array,
+        _impl = internal
+    ]
+
+    arr
+}
+
+Array.length = fn(arr) {
+    arr._impl.size
+}
+
+Array.get = fn(arr, index) {
+    if index < 0 || index >= arr._impl.size {
+        throw "Array.get out of bounds"
+    }
+    arr._impl.data[index]
+}
+
+Array.set = fn(arr, index, value) {
+    if index < 0 || index >= arr._impl.size {
+        throw "Array.set out of bounds"
+    }
+    mutate arr._impl {
+        arr._impl.data[index] = value
+    }
+}
+
+Array.push = fn(arr, value) {
+    mutate arr._impl {
+        arr._impl.data[arr._impl.size] = value
+        arr._impl.size = arr._impl.size + 1
+    }
+}
+
+Array.pop = fn(arr) {
+    if arr._impl.size == 0 {
+        throw "Array.pop on empty"
+    }
+    value = arr._impl.data[arr._impl.size - 1]
+    mutate arr._impl {
+        undefine arr._impl.data[arr._impl.size - 1]
+        arr._impl.size = arr._impl.size - 1
+    }
+    value
+}
+
+Array.forEach = fn(f, arr) {
+    loop = fn(i) {
+        if i < Array.length(arr) {
+            f(Array.get(arr, i))
+            loop(i + 1)
+        } else {
+            null
+        }
+    }
+    loop(0)
+}
+
+Array.map = fn(f, arr) {
+    out = Array.new()
+    loop = fn(i) {
+        if i < Array.length(arr) {
+            Array.push(out, f(Array.get(arr, i)))
+            loop(i + 1)
+        } else {
+            out
+        }
+    }
+    loop(0)
+}
+
+Array.fold = fn(f, acc, arr) {
+    loop = fn(i, a) {
+        if i < Array.length(arr) {
+            loop(i + 1, f(a, Array.get(arr, i)))
+        } else {
+            a
+        }
+    }
+    loop(0, acc)
+}
+
+freeze(Array)
+
+Array
+# protolex-corelib — ds/graph
+# Version 0.1
+
+import Map from "map.plx"
+import Array from "array.plx"
+import List from "list.plx"
+
+Graph = [
+    proto = null
+]
+
+Graph.new = fn() {
+    internal = [
+        proto = null,
+        nodes = Map.new()
+    ]
+    g = [
+        proto = Graph,
+        _impl = internal
+    ]
+    g
+}
+
+Graph._neighbors = fn(g, node) {
+    if Map.has(g._impl.nodes, node) {
+        Map.get(g._impl.nodes, node)
+    } else {
+        null
+    }
+}
+
+Graph.hasNode = fn(g, node) {
+    Map.has(g._impl.nodes, node)
+}
+
+Graph.neighbors = fn(g, node) {
+    n = Graph._neighbors(g, node)
+    if n == null {
+        Array.new()
+    } else {
+        n
+    }
+}
+
+Graph.addNode = fn(g, node) {
+    if !Map.has(g._impl.nodes, node) {
+        Map.put(g._impl.nodes, node, Array.new())
+    }
+}
+
+Graph._addEdgeOne = fn(g, a, b) {
+    arr = Graph._neighbors(g, a)
+    if arr == null {
+        Graph.addNode(g, a)
+        arr = Graph._neighbors(g, a)
+    }
+    Array.push(arr, b)
+}
+
+Graph.addEdge = fn(g, a, b) {
+    Graph._addEdgeOne(g, a, b)
+    Graph._addEdgeOne(g, b, a)
+}
+
+Graph.of = fn(adj) {
+    if adj.proto == Graph {
+        adj
+    } else if adj.proto == Array {
+        g = Graph.new()
+        loop = fn(i) {
+            if i < Array.length(adj) {
+                edge = Array.get(adj, i)
+                Graph.addEdge(g, edge["from"], edge.to)
+                loop(i + 1)
+            } else {
+                g
+            }
+        }
+        loop(0)
+    } else if adj.proto == List {
+        g = Graph.new()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                g
+            } else {
+                edge = List.head(lst)
+                Graph.addEdge(g, edge["from"], edge.to)
+                loop(List.tail(lst))
+            }
+        }
+        loop(adj)
+    } else {
+        throw "Graph.of expects Array, List, or Graph"
+    }
+}
+
+freeze(Graph)
+
+Graph
+# protolex-corelib — ds/index
+# Version 0.1
+
+import List  from "list.plx"
+import Array from "array.plx"
+import Map   from "map.plx"
+import Set   from "set.plx"
+import Stack from "stack.plx"
+import Queue from "queue.plx"
+import Tree  from "tree.plx"
+import Graph from "graph.plx"
+
+ds = [
+    List  = List,
+    Array = Array,
+    Map   = Map,
+    Set   = Set,
+    Stack = Stack,
+    Queue = Queue,
+    Tree  = Tree,
+    Graph = Graph
+]
+
+freeze(ds)
+
+mutate List {
+    List.of = fn(items) {
+        if items.proto == List {
+            items
+        } else if items.proto == Array {
+            loop = fn(i, acc) {
+                if i < 0 {
+                    acc
+                } else {
+                    loop(i - 1, List.cons(Array.get(items, i), acc))
+                }
+            }
+            loop(Array.length(items) - 1, List.nil)
+        } else {
+            throw "List.of expects Array or List"
+        }
+    }
+}
+
+mutate Array {
+    Array.of = fn(items) {
+        if items.proto == Array {
+            items
+        } else if items.proto == List {
+            arr = Array.new()
+            loop = fn(lst) {
+                if List.isNil(lst) {
+                    arr
+                } else {
+                    Array.push(arr, List.head(lst))
+                    loop(List.tail(lst))
+                }
+            }
+            loop(items)
+        } else {
+            throw "Array.of expects Array or List"
+        }
+    }
+}
+
+ds
+# protolex-corelib — ds/list
+# Version 0.1
+
+List = [
+    proto = null
+]
+
+List.nil = [
+    proto = List,
+    isNil = true
+]
+
+List.cons = fn(head, tail) {
+    node = [
+        proto = List,
+        head = head,
+        tail = tail,
+        isNil = false
+    ]
+    node
+}
+
+List.isNil = fn(list) {
+    list.isNil == true
+}
+
+List.head = fn(list) {
+    if list.isNil {
+        throw "List.head on nil"
+    }
+    list.head
+}
+
+List.tail = fn(list) {
+    if list.isNil {
+        throw "List.tail on nil"
+    }
+    list.tail
+}
+
+List.length = fn(list) {
+    loop = fn(lst, acc) {
+        if lst.isNil {
+            acc
+        } else {
+            loop(lst.tail, acc + 1)
+        }
+    }
+    loop(list, 0)
+}
+
+List.map = fn(f, list) {
+    if list.isNil {
+        List.nil
+    } else {
+        List.cons(
+            f(list.head),
+            List.map(f, list.tail)
+        )
+    }
+}
+
+List.fold = fn(f, acc, list) {
+    if list.isNil {
+        acc
+    } else {
+        List.fold(
+            f,
+            f(acc, list.head),
+            list.tail
+        )
+    }
+}
+
+List.forEach = fn(f, list) {
+    if list.isNil {
+        null
+    } else {
+        f(list.head)
+        List.forEach(f, list.tail)
+    }
+}
+
+List.filter = fn(pred, list) {
+    if list.isNil {
+        List.nil
+    } else {
+        h = list.head
+        t = List.filter(pred, list.tail)
+        if pred(h) {
+            List.cons(h, t)
+        } else {
+            t
+        }
+    }
+}
+
+List.reverse = fn(list) {
+    loop = fn(lst, acc) {
+        if lst.isNil {
+            acc
+        } else {
+            loop(lst.tail, List.cons(lst.head, acc))
+        }
+    }
+    loop(list, List.nil)
+}
+
+freeze(List)
+freeze(List.nil)
+
+List
+# protolex-corelib — ds/map
+# Version 0.1
+
+import Array from "array.plx"
+import List from "list.plx"
+
+Map = [
+    proto = null
+]
+
+Map.new = fn() {
+    internal = [
+        proto = null,
+        table = [],
+        size = 0
+    ]
+
+    m = [
+        proto = Map,
+        _impl = internal
+    ]
+
+    m
+}
+
+Map.put = fn(m, key, value) {
+    existed = has(m._impl.table, key)
+    mutate m._impl {
+        m._impl.table[key] = value
+        if !existed {
+            m._impl.size = m._impl.size + 1
+        }
+    }
+}
+
+Map.get = fn(m, key) {
+    m._impl.table[key]
+}
+
+Map.has = fn(m, key) {
+    has(m._impl.table, key)
+}
+
+Map.remove = fn(m, key) {
+    existed = has(m._impl.table, key)
+    mutate m._impl {
+        undefine m._impl.table[key]
+        if existed {
+            m._impl.size = m._impl.size - 1
+        }
+    }
+}
+
+Map.size = fn(m) {
+    m._impl.size
+}
+
+Map.of = fn(items) {
+    if items.proto == Map {
+        items
+    } else if items.proto == Array {
+        m = Map.new()
+        loop = fn(i) {
+            if i < Array.length(items) {
+                pair = Array.get(items, i)
+                Map.put(m, pair.key, pair.value)
+                loop(i + 1)
+            } else {
+                m
+            }
+        }
+        loop(0)
+    } else {
+        m = Map.new()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                m
+            } else {
+                pair = List.head(lst)
+                Map.put(m, pair.key, pair.value)
+                loop(List.tail(lst))
+            }
+        }
+        loop(items)
+    }
+}
+
+freeze(Map)
+
+Map
+# protolex-corelib — ds/queue
+# Version 0.1
+
+import Array from "array.plx"
+import List from "list.plx"
+
+Queue = [
+    proto = null
+]
+
+Queue.new = fn() {
+    q = [
+        proto = Queue,
+        _impl = Array.new(),
+        head = 0
+    ]
+    q
+}
+
+Queue.enqueue = fn(q, value) {
+    Array.push(q._impl, value)
+}
+
+Queue.dequeue = fn(q) {
+    if q.head >= Array.length(q._impl) {
+        throw "Queue.dequeue on empty"
+    }
+    value = Array.get(q._impl, q.head)
+    mutate q {
+        q.head = q.head + 1
+    }
+    value
+}
+
+Queue.of = fn(items) {
+    if items.proto == Queue {
+        items
+    } else if items.proto == Array {
+        q = Queue.new()
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Queue.enqueue(q, Array.get(items, i))
+                loop(i + 1)
+            } else {
+                q
+            }
+        }
+        loop(0)
+    } else if items.proto == List {
+        q = Queue.new()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                q
+            } else {
+                Queue.enqueue(q, List.head(lst))
+                loop(List.tail(lst))
+            }
+        }
+        loop(items)
+    } else {
+        throw "Queue.of expects Array or List"
+    }
+}
+
+freeze(Queue)
+
+Queue
+# protolex-corelib — ds/set
+# Version 0.1
+
+import Map from "map.plx"
+import Array from "array.plx"
+import List from "list.plx"
+
+Set = [
+    proto = null
+]
+
+Set.new = fn() {
+    internal = [
+        proto = null,
+        map = Map.new()
+    ]
+
+    s = [
+        proto = Set,
+        _impl = internal
+    ]
+
+    s
+}
+
+Set.add = fn(s, value) {
+    Map.put(s._impl.map, value, true)
+}
+
+Set.remove = fn(s, value) {
+    Map.remove(s._impl.map, value)
+}
+
+Set.contains = fn(s, value) {
+    Map.has(s._impl.map, value)
+}
+
+Set.size = fn(s) {
+    Map.size(s._impl.map)
+}
+
+Set.of = fn(items) {
+    if items.proto == Set {
+        items
+    } else if items.proto == Array {
+        s = Set.new()
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Set.add(s, Array.get(items, i))
+                loop(i + 1)
+            } else {
+                s
+            }
+        }
+        loop(0)
+    } else if items.proto == List {
+        s = Set.new()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                s
+            } else {
+                Set.add(s, List.head(lst))
+                loop(List.tail(lst))
+            }
+        }
+        loop(items)
+    } else {
+        throw "Set.of expects Array, List, or Set"
+    }
+}
+
+freeze(Set)
+
+Set
+# protolex-corelib — ds/stack
+# Version 0.1
+
+import Array from "array.plx"
+import List from "list.plx"
+
+Stack = [
+    proto = null
+]
+
+Stack.new = fn() {
+    Stack = [
+        proto = Stack,
+        _impl = Array.new()
+    ]
+    Stack
+}
+
+Stack.push = fn(st, value) {
+    Array.push(st._impl, value)
+}
+
+Stack.pop = fn(st) {
+    Array.pop(st._impl)
+}
+
+Stack.peek = fn(st) {
+    if Array.length(st._impl) == 0 {
+        throw "Stack.peek on empty"
+    }
+    Array.get(st._impl, Array.length(st._impl) - 1)
+}
+
+Stack.of = fn(items) {
+    if items.proto == Stack {
+        items
+    } else if items.proto == Array {
+        st = Stack.new()
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Stack.push(st, Array.get(items, i))
+                loop(i + 1)
+            } else {
+                st
+            }
+        }
+        loop(0)
+    } else if items.proto == List {
+        st = Stack.new()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                st
+            } else {
+                Stack.push(st, List.head(lst))
+                loop(List.tail(lst))
+            }
+        }
+        loop(items)
+    } else {
+        throw "Stack.of expects Array or List"
+    }
+}
+
+freeze(Stack)
+
+Stack
+# protolex-corelib — ds/tree
+# Version 0.1
+
+import Array from "array.plx"
+import List from "list.plx"
+
+Tree = [
+    proto = null
+]
+
+Tree.empty = fn() {
+    internal = [
+        proto = null,
+        data = Array.new()
+    ]
+    t = [
+        proto = Tree,
+        _impl = internal
+    ]
+    t
+}
+
+Tree.insert = fn(t, value, compare) {
+    data = t._impl.data
+    n = Array.length(data)
+    Array.push(data, value)
+    shift = fn(i) {
+        if i < 0 {
+            Array.set(data, 0, value)
+        } else if compare(value, Array.get(data, i)) {
+            Array.set(data, i + 1, Array.get(data, i))
+            shift(i - 1)
+        } else {
+            Array.set(data, i + 1, value)
+        }
+    }
+    shift(n - 1)
+}
+
+Tree.contains = fn(t, value, compare) {
+    data = t._impl.data
+    loop = fn(i) {
+        if i >= Array.length(data) {
+            false
+        } else {
+            v = Array.get(data, i)
+            if !compare(v, value) && !compare(value, v) {
+                true
+            } else {
+                loop(i + 1)
+            }
+        }
+    }
+    loop(0)
+}
+
+Tree.remove = fn(t, value, compare) {
+    data = t._impl.data
+    shift_left = fn(j) {
+        if j >= Array.length(data) - 1 {
+            Array.pop(data)
+        } else {
+            Array.set(data, j, Array.get(data, j + 1))
+            shift_left(j + 1)
+        }
+    }
+    loop = fn(i) {
+        if i >= Array.length(data) {
+            null
+        } else {
+            v = Array.get(data, i)
+            if !compare(v, value) && !compare(value, v) {
+                shift_left(i)
+            } else {
+                loop(i + 1)
+            }
+        }
+    }
+    loop(0)
+}
+
+Tree.of = fn(items, compare) {
+    if items.proto == Tree {
+        items
+    } else if items.proto == Array {
+        t = Tree.empty()
+        loop = fn(i) {
+            if i < Array.length(items) {
+                Tree.insert(t, Array.get(items, i), compare)
+                loop(i + 1)
+            } else {
+                t
+            }
+        }
+        loop(0)
+    } else if items.proto == List {
+        t = Tree.empty()
+        loop = fn(lst) {
+            if List.isNil(lst) {
+                t
+            } else {
+                Tree.insert(t, List.head(lst), compare)
+                loop(List.tail(lst))
+            }
+        }
+        loop(items)
+    } else {
+        throw "Tree.of expects Array or List"
+    }
+}
+
+freeze(Tree)
+
+Tree

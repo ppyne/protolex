@@ -2,6 +2,3 @@
 /src/protolex
 /src/*.o
 /src/*.d
-/web/protolex.js
-/web/protolex.wasm
-/web/protolex.data
